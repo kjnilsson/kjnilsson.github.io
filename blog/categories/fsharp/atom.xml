@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: fsharp, | Coder Karl]]></title>
+  <title><![CDATA[Category: fsharp, | coder karl]]></title>
   <link href="http://kjnilsson.github.io/blog/categories/fsharp/atom.xml" rel="self"/>
   <link href="http://kjnilsson.github.io/"/>
-  <updated>2013-12-16T10:24:10+00:00</updated>
+  <updated>2013-12-16T12:02:41+00:00</updated>
   <id>http://kjnilsson.github.io/</id>
   <author>
     <name><![CDATA[Karl Nilsson]]></name>
