@@ -1,118 +1,326 @@
 
-<!DOCTYPE html>
-<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
-<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
-<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<!DOCTYPE HTML>
+<html>
 <head>
-  <meta charset="utf-8">
-  <title>My Octopress Blog</title>
-  <meta name="author" content="Your Name">
+	<meta charset="utf-8">
+	<title>Coder Karl</title>
+	<meta name="author" content="Karl Nilsson">
 
-  
-  <meta name="description" content=" Blog Archives Recent Posts ">
-  
+	
+	<meta name="description" content="Agents (MailboxProcessor in fsharp) can be incredibly useful. They allow you to control concurrency and access to shared state in a simple and safe &hellip;">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  <!-- http://t.co/dKP3o1e -->
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  
-  <link rel="canonical" href="http://kjnilsson.github.io">
-  <link href="/favicon.png" rel="icon">
-  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="My Octopress Blog" type="application/atom+xml">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
-<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-
-  
-
+	<link href="/atom.xml" rel="alternate" title="Coder Karl" type="application/atom+xml">
+	<link rel="canonical" href="">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script async="true" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	
 </head>
 
-<body   >
-  <header role="banner"><hgroup>
-  <h1><a href="/">My Octopress Blog</a></h1>
-  
-    <h2>A blogging framework for hackers.</h2>
-  
-</hgroup>
+
+<body>
+	<header id="header" class="inner"><h1><a href="/">Coder Karl</a></h1>
+<nav id="main-nav"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/blog/archives">Archives</a></li>
+</ul>
+</nav>
+<nav id="mobile-nav">
+	<div class="alignleft menu">
+		<a class="button">Menu</a>
+		<div class="container"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/blog/archives">Archives</a></li>
+</ul>
+</div>
+	</div>
+	<div class="alignright search">
+		<a class="button"></a>
+		<div class="container">
+			<form action="http://google.com/search" method="get">
+				<input type="text" name="q" results="0">
+				<input type="hidden" name="q" value="site:kjnilsson.github.io">
+			</form>
+		</div>
+	</div>
+</nav>
+<nav id="sub-nav" class="alignright">
+	<div class="social">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/kjnilsson" title="Twitter">Twitter</a>
+		
+		
+    
+		
+		
+		
+		
+		
+		<a class="rss" href="/atom.xml" title="RSS">RSS</a>
+		
+    
+	</div>
+	<form class="search" action="http://google.com/search" method="get">
+		<input class="alignright" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:kjnilsson.github.io">
+	</form>
+</nav>
 
 </header>
-  <nav role="navigation"><ul class="subscription" data-subscription="rss">
-  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
-  
-</ul>
-  
-<form action="http://google.com/search" method="get">
-  <fieldset role="search">
-    <input type="hidden" name="q" value="site:kjnilsson.github.io" />
-    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-  </fieldset>
-</form>
-  
-<ul class="main-navigation">
-  <li><a href="/">Blog</a></li>
-  <li><a href="/blog/archives">Archives</a></li>
-</ul>
+	
+		
+	
+	<div id="content" class="inner">
 
-</nav>
-  <div id="main">
-    <div id="content">
-      <div class="blog-index">
+
+    <article class="post">
+	<h2 class="title">
+		
+		<a href="/blog/2013/12/16/how-agents-fail/">
+		
+			How Agents Fail</a>
+	</h2>
+	<div class="entry-content">
+		<p>Agents (<code>MailboxProcessor</code> in fsharp) can be incredibly useful. They allow you to control concurrency and access to shared state in a simple and safe manner, something that is surprisingly hard in languages without similar abstractions. Having spent the last 6 months writing a fairly decently sized, distributed business application in fsharp it proved natural for us to make frequent use of agents almost to the extent that <em>&lsquo;just add another agent&rsquo;</em> often is suggested as the fix for most problems that we encounter.
+Naturally this approach is not without problems. Fsharp agents do not have any default strategies of how to work with multiple agents or any built-in strategies for dealing with agent failures. All these aspects need to be handled in code and this blog entry aims to explore a couple of options for dealing with unhandled exceptions in agents.</p>
+
+<p>So how <em>do</em> agents fail? Silently, it turns out. When an unhandled exception occurs in the body of an agent the exception is not allowed to escape the agent unless you subscribe to the &lsquo;Error&rsquo; event. This may seem an unusual default to have for developers used to traditional .NET/Java exception handling but if you look at other languages which may have inspired this model (e.g. <a href="http://www.erlang.org/doc/reference_manual/processes.html">erlang</a>) it actually makes perfect sense. An agent (or <em>process</em> in erlang) is an isolated unit of computation such that the failure of one should not affect other agents unless explicitly linked together to form a <em>supervision tree</em>. The supervision tree is a key pattern that is used to build fault tolerant application in Erlang.
+Fsharp doesn&rsquo;t have an api for creating supervision trees but does provide all the components needed to do so (at least for in-process).</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='fsharp'><span class='line'><span class="k">let</span> <span class="n">spawn</span> <span class="bp">()</span> <span class="o">=</span>
+</span><span class='line'>    <span class="nn">MailboxProcessor</span><span class="p">.</span><span class="nc">Start</span> <span class="o">(</span><span class="k">fun</span> <span class="n">inbox</span> <span class="o">-&gt;</span>
+</span><span class='line'>        <span class="k">let</span> <span class="k">rec</span> <span class="n">loop</span> <span class="n">state</span> <span class="o">=</span>
+</span><span class='line'>            <span class="n">async</span> <span class="o">{</span>
+</span><span class='line'>                <span class="k">let</span><span class="o">!</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">inbox</span><span class="o">.</span><span class="nc">Receive</span> <span class="bp">()</span>
+</span><span class='line'>                <span class="k">if</span> <span class="n">msg</span> <span class="o">=</span> <span class="mi">42</span> <span class="k">then</span> <span class="n">failwith</span> <span class="s2">&quot;can&#39;t catch me&quot;</span>
+</span><span class='line'>                <span class="k">else</span>
+</span><span class='line'>                    <span class="k">return</span><span class="o">!</span> <span class="n">loop</span> <span class="o">(</span><span class="n">state</span> <span class="o">+</span> <span class="n">msg</span><span class="o">)</span> <span class="o">}</span>
+</span><span class='line'>        <span class="n">loop</span> <span class="mi">0</span><span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Catch it!</h3>
+
+<p>So an agent that throws an unobserved exception is effectively rendered useless. New messages will be accepted but never processed and although the agent handler has failed they will still be added to the internal, unbounded mailbox queue potentially causing an eventually fatal memory leak.</p>
+
+<p>This is often undesirable, so what can we do to address it? The simplest possible way to simulate &lsquo;classic&rsquo; .NET exception handling behaviour is to re-raise any exceptions on to the thread the agent was created on and rely on some other exception handler to catch it.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='fsharp'><span class='line'><span class="k">let</span> <span class="n">agent</span> <span class="o">=</span> <span class="nn">MailboxProcessor</span><span class="p">.</span><span class="nc">Start</span><span class="bp">()</span>
+</span><span class='line'><span class="n">agent</span><span class="o">.</span><span class="nn">Errors</span><span class="p">.</span><span class="nc">Add</span> <span class="n">raise</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>But in many cases we want more detailed control over the strategies we employ to recover from such exceptions. We have already mentioned the solution above: <em>supervision trees</em>.</p>
+
+<h3>Feeling watched&hellip;</h3>
+
+<p>Below follows an example on how to implement a simple supervisor that keeps a registry of <em>id</em> to <em>agent</em> and relaunches any monitored agents that fail. Note that the <code>spawnLink</code> functions add the error handler before starting the agent. This is sensible in the rare occurrence that the agent will fail before the error handler is added. Erlang has a similar <a href="http://www.erlang.org/doc/man/erlang.html#spawn_link-1">function</a> for exactly this reason.</p>
+
+<p>Supervisors allow you to implement sensible restart strategies for failed agents.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+</pre></td><td class='code'><pre><code class='fsharp'><span class='line'><span class="k">module</span> <span class="nc">Worker</span> <span class="o">=</span>
+</span><span class='line'>    <span class="k">open</span> <span class="nc">System</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">type</span> <span class="nc">WorkerProtocol</span> <span class="o">=</span>
+</span><span class='line'>        <span class="o">|</span> <span class="nc">DoWork</span>
+</span><span class='line'>        <span class="o">|</span> <span class="nc">Exit</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">let</span> <span class="n">spawnLink</span> <span class="n">link</span> <span class="o">=</span>
+</span><span class='line'>        <span class="k">let</span> <span class="n">mb</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">MailboxProcessor</span><span class="o">&lt;</span><span class="nc">WorkerProtocol</span><span class="o">&gt;(</span><span class="k">fun</span> <span class="n">inbox</span> <span class="o">-&gt;</span>
+</span><span class='line'>            <span class="k">let</span> <span class="k">rec</span> <span class="n">loop</span> <span class="n">c</span> <span class="o">=</span> <span class="n">async</span> <span class="o">{</span>
+</span><span class='line'>                <span class="k">let</span><span class="o">!</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">inbox</span><span class="o">.</span><span class="nc">Receive</span> <span class="bp">()</span>
+</span><span class='line'>                <span class="k">match</span> <span class="n">msg</span> <span class="k">with</span>
+</span><span class='line'>                <span class="o">|</span> <span class="nc">DoWork</span> <span class="o">-&gt;</span>
+</span><span class='line'>                    <span class="n">printfn</span> <span class="s2">&quot;working...&quot;</span>
+</span><span class='line'>                    <span class="k">do</span><span class="o">!</span> <span class="nn">Async</span><span class="p">.</span><span class="nc">Sleep</span> <span class="mi">250</span>
+</span><span class='line'>                    <span class="k">if</span> <span class="n">c</span> <span class="o">&gt;</span> <span class="mi">4</span> <span class="k">then</span> <span class="n">failwith</span> <span class="s2">&quot;oops&quot;</span>
+</span><span class='line'>                    <span class="k">return</span><span class="o">!</span> <span class="n">loop</span> <span class="o">(</span><span class="n">c</span> <span class="o">+</span> <span class="mi">1</span><span class="o">)</span>
+</span><span class='line'>                <span class="o">|</span> <span class="nc">Exit</span> <span class="o">-&gt;</span>
+</span><span class='line'>                    <span class="bp">()</span> <span class="o">}</span>
+</span><span class='line'>            <span class="n">loop</span> <span class="mi">0</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">mb</span><span class="o">.</span><span class="nn">Error</span><span class="p">.</span><span class="nc">Add</span> <span class="n">link</span>
+</span><span class='line'>        <span class="n">mb</span><span class="o">.</span><span class="nc">Start</span><span class="bp">()</span>
+</span><span class='line'>        <span class="n">mb</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">module</span> <span class="nc">Supervisor</span> <span class="o">=</span>
+</span><span class='line'>    <span class="k">open</span> <span class="nc">System</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">type</span> <span class="nc">SuperProtocol</span> <span class="o">=</span>
+</span><span class='line'>        <span class="o">|</span> <span class="nc">ChildFaulted</span> <span class="k">of</span> <span class="nc">Guid</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">let</span> <span class="n">dispose</span> <span class="o">(</span><span class="n">o</span> <span class="o">:</span> <span class="n">obj</span><span class="o">)</span> <span class="o">=</span>
+</span><span class='line'>        <span class="k">match</span> <span class="n">o</span> <span class="k">with</span>
+</span><span class='line'>        <span class="o">|</span> <span class="o">:?</span> <span class="nc">IDisposable</span> <span class="k">as</span> <span class="n">d</span> <span class="o">-&gt;</span> <span class="n">d</span><span class="o">.</span><span class="nc">Dispose</span><span class="bp">()</span>
+</span><span class='line'>        <span class="o">|</span> <span class="o">_</span> <span class="o">-&gt;</span> <span class="bp">()</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// this is also a spawnLink as other agents could supervise other supervisors</span>
+</span><span class='line'>    <span class="k">let</span> <span class="n">spawnLink</span> <span class="n">link</span> <span class="o">=</span>
+</span><span class='line'>        <span class="k">let</span> <span class="n">agent</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">MailboxProcessor</span><span class="o">&lt;</span><span class="nc">SuperProtocol</span><span class="o">&gt;</span> <span class="o">(</span><span class="k">fun</span> <span class="n">inbox</span> <span class="o">-&gt;</span>
+</span><span class='line'>            <span class="c1">// error handler that sends a message to the supervisor&#39;s inbox that </span>
+</span><span class='line'>            <span class="c1">// a child agent has failed</span>
+</span><span class='line'>            <span class="c1">// In this instane we don&#39;t care which exception was thrown</span>
+</span><span class='line'>            <span class="k">let</span> <span class="n">errorHandler</span> <span class="n">childId</span> <span class="o">=</span> <span class="k">fun</span> <span class="o">_</span> <span class="o">-&gt;</span> <span class="n">inbox</span><span class="o">.</span><span class="nc">Post</span> <span class="o">(</span><span class="nc">ChildFaulted</span> <span class="n">childId</span><span class="o">)</span>
+</span><span class='line'>            <span class="k">let</span> <span class="k">rec</span> <span class="n">loop</span> <span class="n">registry</span> <span class="o">=</span>
+</span><span class='line'>                <span class="n">async</span> <span class="o">{</span>
+</span><span class='line'>                    <span class="k">let</span><span class="o">!</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">inbox</span><span class="o">.</span><span class="nc">TryReceive</span> <span class="mi">1000</span>
+</span><span class='line'>                    <span class="k">match</span> <span class="n">msg</span> <span class="k">with</span>
+</span><span class='line'>                    <span class="o">|</span> <span class="nc">Some</span> <span class="o">(</span><span class="nc">ChildFaulted</span> <span class="n">childId</span><span class="o">)</span> <span class="o">-&gt;</span>
+</span><span class='line'>                        <span class="n">printfn</span> <span class="s2">&quot;child faulted %A&quot;</span> <span class="n">childId</span>
+</span><span class='line'>                        <span class="n">dispose</span> <span class="o">(</span><span class="nn">Map</span><span class="p">.</span><span class="n">find</span> <span class="n">childId</span> <span class="n">registry</span><span class="o">)</span>
+</span><span class='line'>                        <span class="n">printfn</span> <span class="s2">&quot;re-launching child %A&quot;</span> <span class="n">childId</span>
+</span><span class='line'>                        <span class="k">let</span> <span class="n">registry</span> <span class="o">=</span>
+</span><span class='line'>                            <span class="nn">Map</span><span class="p">.</span><span class="n">add</span> <span class="n">childId</span> <span class="o">(</span><span class="nn">Worker</span><span class="p">.</span><span class="n">spawnLink</span> <span class="o">(</span><span class="n">errorHandler</span> <span class="n">childId</span><span class="o">))</span> <span class="n">registry</span>
+</span><span class='line'>                        <span class="k">return</span><span class="o">!</span> <span class="n">loop</span> <span class="n">registry</span>
+</span><span class='line'>                    <span class="o">|</span> <span class="nc">None</span> <span class="o">-&gt;</span>
+</span><span class='line'>                        <span class="n">printfn</span> <span class="s2">&quot;asking workers to do work&quot;</span>
+</span><span class='line'>                        <span class="n">registry</span> <span class="o">|&gt;</span> <span class="nn">Map</span><span class="p">.</span><span class="n">iter</span> <span class="o">(</span><span class="k">fun</span> <span class="n">k</span> <span class="n">v</span> <span class="o">-&gt;</span> <span class="n">v</span><span class="o">.</span><span class="nc">Post</span> <span class="o">(</span><span class="nn">Worker</span><span class="p">.</span><span class="nn">WorkerProtocol</span><span class="p">.</span><span class="nc">DoWork</span><span class="o">))</span>
+</span><span class='line'>                        <span class="k">return</span><span class="o">!</span> <span class="n">loop</span> <span class="n">registry</span> <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="c1">// start the supervisor by creating 5 worker child agents</span>
+</span><span class='line'>            <span class="o">[</span><span class="mi">0</span><span class="o">..</span><span class="mi">4</span><span class="o">]</span>
+</span><span class='line'>            <span class="o">|&gt;</span> <span class="nn">List</span><span class="p">.</span><span class="n">map</span> <span class="o">(</span><span class="k">fun</span> <span class="o">_</span> <span class="o">-&gt;</span> <span class="nn">Guid</span><span class="p">.</span><span class="nc">NewGuid</span><span class="bp">()</span><span class="o">)</span>
+</span><span class='line'>            <span class="o">|&gt;</span> <span class="nn">List</span><span class="p">.</span><span class="n">map</span> <span class="o">(</span><span class="k">fun</span> <span class="n">childId</span> <span class="o">-&gt;</span> <span class="n">childId</span><span class="o">,</span> <span class="nn">Worker</span><span class="p">.</span><span class="n">spawnLink</span> <span class="o">(</span><span class="n">errorHandler</span> <span class="n">childId</span><span class="o">))</span>
+</span><span class='line'>            <span class="o">|&gt;</span> <span class="nn">Map</span><span class="p">.</span><span class="n">ofList</span>
+</span><span class='line'>            <span class="o">|&gt;</span> <span class="n">loop</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">agent</span><span class="o">.</span><span class="nn">Error</span><span class="p">.</span><span class="nc">Add</span> <span class="n">link</span>
+</span><span class='line'>        <span class="n">agent</span><span class="o">.</span><span class="nc">Start</span><span class="bp">()</span>
+</span><span class='line'>        <span class="n">agent</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Programming with agents in fsharp is both fun and enabling but there are patterns that will make the overall experience  better in the long run if you get right early. In potential future entries I&rsquo;d like to cover my experience regarding flow control and distribution and any other interesting aspects I may come across.</p>
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
   
-  
-  <div class="pagination">
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-  </div>
+
+
+<time datetime="2013-12-16T10:00:27+00:00" pubdate data-updated="true">Dec 16<span>th</span>, 2013</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/erlang/'>erlang</a>, <a class='category' href='/blog/categories/fsharp/'>fsharp,</a>
+
+
 </div>
-<aside class="sidebar">
-  
-    <section>
-  <h1>Recent Posts</h1>
-  <ul id="recent_posts">
+	
+</div>
+</article>
+
+<nav id="pagenavi">
     
-  </ul>
-</section>
+    
+    <div class="center"><a href="/blog/archives">Blog Archives</a></div>
+</nav></div>
+	<footer id="footer" class="inner">Copyright &copy; 2013
 
-
-
-
-
-  
-</aside>
-
-    </div>
-  </div>
-  <footer role="contentinfo"><p>
-  Copyright &copy; 2013 - Your Name -
-  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
-</p>
+    Karl Nilsson
 
 </footer>
-  
+	<script src="/javascripts/slash.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
 
-
-
-
-
-
-
-  <script type="text/javascript">
-    (function(){
-      var twitterWidgets = document.createElement('script');
-      twitterWidgets.type = 'text/javascript';
-      twitterWidgets.async = true;
-      twitterWidgets.src = '//platform.twitter.com/widgets.js';
-      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
-    })();
-  </script>
 
 
 

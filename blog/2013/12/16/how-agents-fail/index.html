@@ -1,24 +1,83 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Coder Karl]]></title>
-  <link href="http://kjnilsson.github.io/atom.xml" rel="self"/>
-  <link href="http://kjnilsson.github.io/"/>
-  <updated>2013-12-16T10:24:10+00:00</updated>
-  <id>http://kjnilsson.github.io/</id>
-  <author>
-    <name><![CDATA[Karl Nilsson]]></name>
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>How Agents Fail - Coder Karl</title>
+	<meta name="author" content="Karl Nilsson">
+
+	
+	<meta name="description" content="Agents (MailboxProcessor in fsharp) can be incredibly useful. They allow you to control concurrency and access to shared state in a simple and safe &hellip;">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="Coder Karl" type="application/atom+xml">
+	<link rel="canonical" href="">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script async="true" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	
+</head>
+
+
+<body>
+	<header id="header" class="inner"><h1><a href="/">Coder Karl</a></h1>
+<nav id="main-nav"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/blog/archives">Archives</a></li>
+</ul>
+</nav>
+<nav id="mobile-nav">
+	<div class="alignleft menu">
+		<a class="button">Menu</a>
+		<div class="container"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/blog/archives">Archives</a></li>
+</ul>
+</div>
+	</div>
+	<div class="alignright search">
+		<a class="button"></a>
+		<div class="container">
+			<form action="http://google.com/search" method="get">
+				<input type="text" name="q" results="0">
+				<input type="hidden" name="q" value="site:kjnilsson.github.io">
+			</form>
+		</div>
+	</div>
+</nav>
+<nav id="sub-nav" class="alignright">
+	<div class="social">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/kjnilsson" title="Twitter">Twitter</a>
+		
+		
     
-  </author>
-  <generator uri="http://octopress.org/">Octopress</generator>
+		
+		
+		
+		
+		
+		<a class="rss" href="/atom.xml" title="RSS">RSS</a>
+		
+    
+	</div>
+	<form class="search" action="http://google.com/search" method="get">
+		<input class="alignright" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:kjnilsson.github.io">
+	</form>
+</nav>
 
-  
-  <entry>
-    <title type="html"><![CDATA[How Agents Fail]]></title>
-    <link href="http://kjnilsson.github.io/blog/2013/12/16/how-agents-fail/"/>
-    <updated>2013-12-16T10:00:27+00:00</updated>
-    <id>http://kjnilsson.github.io/blog/2013/12/16/how-agents-fail</id>
-    <content type="html"><![CDATA[<p>Agents (<code>MailboxProcessor</code> in fsharp) can be incredibly useful. They allow you to control concurrency and access to shared state in a simple and safe manner, something that is surprisingly hard in languages without similar abstractions. Having spent the last 6 months writing a fairly decently sized, distributed business application in fsharp it proved natural for us to make frequent use of agents almost to the extent that <em>&lsquo;just add another agent&rsquo;</em> often is suggested as the fix for most problems that we encounter.
+</header>
+	
+		
+	
+	<div id="content" class="inner"><article class="post">
+	<h2 class="title">How Agents Fail</h2>
+	<div class="entry-content"><p>Agents (<code>MailboxProcessor</code> in fsharp) can be incredibly useful. They allow you to control concurrency and access to shared state in a simple and safe manner, something that is surprisingly hard in languages without similar abstractions. Having spent the last 6 months writing a fairly decently sized, distributed business application in fsharp it proved natural for us to make frequent use of agents almost to the extent that <em>&lsquo;just add another agent&rsquo;</em> often is suggested as the fix for most problems that we encounter.
 Naturally this approach is not without problems. Fsharp agents do not have any default strategies of how to work with multiple agents or any built-in strategies for dealing with agent failures. All these aspects need to be handled in code and this blog entry aims to explore a couple of options for dealing with unhandled exceptions in agents.</p>
 
 <p>So how <em>do</em> agents fail? Silently, it turns out. When an unhandled exception occurs in the body of an agent the exception is not allowed to escape the agent unless you subscribe to the &lsquo;Error&rsquo; event. This may seem an unusual default to have for developers used to traditional .NET/Java exception handling but if you look at other languages which may have inspired this model (e.g. <a href="http://www.erlang.org/doc/reference_manual/processes.html">erlang</a>) it actually makes perfect sense. An agent (or <em>process</em> in erlang) is an isolated unit of computation such that the failure of one should not affect other agents unless explicitly linked together to form a <em>supervision tree</em>. The supervision tree is a key pattern that is used to build fault tolerant application in Erlang.
@@ -204,7 +263,65 @@ Fsharp doesn&rsquo;t have an api for creating supervision trees but does provide
 
 
 <p>Programming with agents in fsharp is both fun and enabling but there are patterns that will make the overall experience  better in the long run if you get right early. In potential future entries I&rsquo;d like to cover my experience regarding flow control and distribution and any other interesting aspects I may come across.</p>
-]]></content>
-  </entry>
+</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
   
-</feed>
+
+
+<time datetime="2013-12-16T10:00:27+00:00" pubdate data-updated="true">Dec 16<span>th</span>, 2013</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/erlang/'>erlang</a>, <a class='category' href='/blog/categories/fsharp/'>fsharp,</a>
+
+
+</div>
+	
+</div>
+</article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+		
+		
+		<a class="addthis_button_tweet"></a>
+		
+		
+		
+	</div>
+	
+</div>
+
+
+</div>
+	<footer id="footer" class="inner">Copyright &copy; 2013
+
+    Karl Nilsson
+
+</footer>
+	<script src="/javascripts/slash.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+
+
+
+
+</body>
+</html>
