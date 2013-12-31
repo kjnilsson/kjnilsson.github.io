@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: fsharp, | coder karl]]></title>
+  <title><![CDATA[Category: fsharp | coder karl]]></title>
   <link href="http://kjnilsson.github.io/blog/categories/fsharp/atom.xml" rel="self"/>
   <link href="http://kjnilsson.github.io/"/>
-  <updated>2013-12-18T10:08:54+00:00</updated>
+  <updated>2013-12-31T10:52:03+00:00</updated>
   <id>http://kjnilsson.github.io/</id>
   <author>
     <name><![CDATA[Karl Nilsson]]></name>
@@ -14,127 +14,37 @@
 
   
   <entry>
-    <title type="html"><![CDATA[How Agents Fail]]></title>
-    <link href="http://kjnilsson.github.io/blog/2013/12/16/how-agents-fail/"/>
-    <updated>2013-12-16T10:00:27+00:00</updated>
-    <id>http://kjnilsson.github.io/blog/2013/12/16/how-agents-fail</id>
-    <content type="html"><![CDATA[<p>Agents (<code>MailboxProcessor</code> in fsharp) can be incredibly useful. They allow you to control concurrency and access to shared state in a simple and safe manner, something that is surprisingly hard in languages without similar abstractions. Having spent the last 6 months writing a fairly decently sized, distributed business application in fsharp it proved natural for us to make frequent use of agents almost to the extent that <em>&lsquo;just add another agent&rsquo;</em> often is suggested as the fix for most problems that we encounter.
-Naturally this approach is not without problems. Fsharp agents do not have any default strategies of how to work with multiple agents or any built-in strategies for dealing with agent failures. All these aspects need to be handled in code and this blog entry aims to explore a couple of options for dealing with unhandled exceptions in agents.</p>
+    <title type="html"><![CDATA[Reflections on code2013]]></title>
+    <link href="http://kjnilsson.github.io/blog/2013/12/31/reflections-on-code2013/"/>
+    <updated>2013-12-31T10:48:42+00:00</updated>
+    <id>http://kjnilsson.github.io/blog/2013/12/31/reflections-on-code2013</id>
+    <content type="html"><![CDATA[<p><a href="http://code2013.herokuapp.com">code2013</a> is an informal twitter survey of programming languages used in 2013. When I saw the hashtag appear in my timeline I tweeted:</p>
 
-<p>So how <em>do</em> agents fail? Silently, it turns out. When an unhandled exception occurs in the body of an agent the exception is not allowed to escape the agent unless you subscribe to the &lsquo;Error&rsquo; event. This may seem an unusual default to have for developers used to traditional .NET/Java exception handling but if you look at other languages which may have inspired this model (e.g. <a href="http://www.erlang.org/doc/reference_manual/processes.html">erlang</a>) it actually makes perfect sense. An agent (or <em>process</em> in erlang) is an isolated unit of computation such that the failure of one should not affect other agents unless explicitly linked together to form a <em>supervision tree</em>. The supervision tree is a key pattern that is used to build fault tolerant application in Erlang.
-Fsharp doesn&rsquo;t have an api for creating supervision trees but does provide all the components needed to do so (at least for in-process).</p>
+<blockquote class="twitter-tweet" lang="en"><p><a href="https://twitter.com/search?q=%23F#&amp;src=hash">#fsharp</a> <a href="https://twitter.com/search?q=%23code2013&amp;src=hash">#code2013</a> :P</p>&mdash; Karl-Johan Nilsson (@kjnilsson) <a href="https://twitter.com/kjnilsson/statuses/417752233787527169">December 30, 2013</a></blockquote>
 
-<p>```fsharp
-let spawn () =</p>
 
-<pre><code>MailboxProcessor.Start (fun inbox -&gt;
-    let rec loop state =
-        async {
-            let! msg = inbox.Receive ()
-            if msg = 42 then failwith "can't catch me" 
-            else
-                return! loop (state + msg) }
-    loop 0)
-</code></pre>
+<script async src="http://kjnilsson.github.io//platform.twitter.com/widgets.js" charset="utf-8"></script>
 
-<p>```</p>
 
-<h3>Catch it!</h3>
+<p></p>
 
-<p>So an agent that throws an unobserved exception is effectively rendered useless. New messages will be accepted but never processed and although the agent handler has failed they will still be added to the internal, unbounded mailbox queue potentially causing an eventually fatal memory leak.</p>
+<p>..deliberately avoiding this excellent opportunity to show what an exceptional polyglot I am. I wasn&rsquo;t 100% serious of course. I have also written some c# and javascript and dabbled in many other languages but the overall experience is accurate. 2013, for me, really was the year of F#.</p>
 
-<p>This is often undesirable, so what can we do to address it? The simplest possible way to simulate &lsquo;classic&rsquo; .NET exception handling behaviour is to re-raise any exceptions on to the thread the agent was created on and rely on some other exception handler to catch it.</p>
+<p>I wrote my first F# program in 2009 (exact dates are hazy but it should be thereabouts). It was a simple utility we needed whilst doing performance testing in the Microsoft labs. I didn&rsquo;t really <em>get it</em> at the time. I probably wasn&rsquo;t ready and didn&rsquo;t use it again for several years.</p>
 
-<p>```fsharp
-let agent = MailboxProcessor.Start()
-agent.Errors.Add raise</p>
+<p>This year was different. This year <a href="http://15below.com">we</a> started using F# and certainly for the latter half of the year my tweet is accurate. I wrote distributed, server side software in fsharp and that is what I did.</p>
 
-<p>```</p>
+<p>Naturally solely focussing on a single language isn&rsquo;t healthy in the long run but this year it is what I needed to do for a couple of reasons. It involved a paradigm shift from OOP to Functional (First). Paradigm shifts are natural events but significant effort is still required to really <em>get</em> and embed oneself in the new paradigm. Also I needed to write good F# cause that is what we were writing the system in and I needed to specialise in order to deliver code to the standard I expect of myself.</p>
 
-<p>But in many cases we want more detailed control over the strategies we employ to recover from such exceptions. We have already mentioned the solution above: <em>supervision trees</em>.</p>
+<p>Although I was primarily writing F# I didn&rsquo;t just study this language. I was still reading and learning from other languages such as erlang, clojure and haskell. These languages have plenty of interesting features and there is a lot one can learn. The programming principles embedded in erlang has been a great guide when writing and designing distributed systems and I have also much enjoyed Rich Hickey&rsquo;s talks on <a href="http://www.infoq.com/author/Rich-Hickey">not-only-clojure</a>.</p>
 
-<h3>Feeling watched&hellip;</h3>
+<p>In my programming career 2013 has been the most fun, challenging and rewarding year so far.</p>
 
-<p>Below follows an example on how to implement a simple supervisor that keeps a registry of <em>id</em> to <em>agent</em> and relaunches any monitored agents that fail. Note that the <code>spawnLink</code> functions add the error handler before starting the agent. This is sensible in the rare occurrence that the agent will fail before the error handler is added. Erlang has a similar <a href="http://www.erlang.org/doc/man/erlang.html#spawn_link-1">function</a> for exactly this reason.</p>
+<p>Will I just do F# in 2014? There will most likely be a great deal of it but I hope I will now have the capacity to take on real (ish) work in other languages, in particular erlang and clojure. No doubt I&rsquo;ll be writing a fair bit of javascript as well. Its ubiquity is hard to ignore.</p>
 
-<p>Supervisors allow you to implement sensible restart strategies for failed agents.</p>
+<p>It is going to be hard to make 2014 as exciting as 2013 but I am going to try.</p>
 
-<p>```fsharp
-module Worker =</p>
-
-<pre><code>open System
-
-type WorkerProtocol = 
-    | DoWork
-    | Exit
-
-let spawnLink link = 
-    let mb = new MailboxProcessor&lt;WorkerProtocol&gt;(fun inbox -&gt;
-        let rec loop c = async {
-            let! msg = inbox.Receive ()
-            match msg with
-            | DoWork -&gt;
-                printfn "working..."
-                do! Async.Sleep 250
-                if c &gt; 4 then failwith "oops"
-                return! loop (c + 1)
-            | Exit -&gt;
-                () }
-        loop 0)
-    mb.Error.Add link
-    mb.Start()
-    mb
-</code></pre>
-
-<p>module Supervisor =</p>
-
-<pre><code>open System
-
-type SuperProtocol =
-    | ChildFaulted of Guid
-
-let dispose (o : obj) =
-    match o with
-    | :? IDisposable as d -&gt; d.Dispose()
-    | _ -&gt; ()
-
-// this is also a spawnLink as other agents could supervise other supervisors
-let spawnLink link =
-    let agent = new MailboxProcessor&lt;SuperProtocol&gt; (fun inbox -&gt;
-        // error handler that sends a message to the supervisor's inbox that 
-        // a child agent has failed
-        // In this instane we don't care which exception was thrown
-        let errorHandler childId = fun _ -&gt; inbox.Post (ChildFaulted childId)
-        let rec loop registry = 
-            async {
-                let! msg = inbox.TryReceive 1000
-                match msg with
-                | Some (ChildFaulted childId) -&gt;
-                    printfn "child faulted %A" childId
-                    dispose (Map.find childId registry)
-                    printfn "re-launching child %A" childId
-                    let registry = 
-                        Map.add childId (Worker.spawnLink (errorHandler childId)) registry
-                    return! loop registry 
-                | None -&gt;
-                    printfn "asking workers to do work"
-                    registry |&gt; Map.iter (fun k v -&gt; v.Post (Worker.WorkerProtocol.DoWork))
-                    return! loop registry }
-
-        // start the supervisor by creating 5 worker child agents
-        [0..4]
-        |&gt; List.map (fun _ -&gt; Guid.NewGuid()) 
-        |&gt; List.map (fun childId -&gt; childId, Worker.spawnLink (errorHandler childId)) 
-        |&gt; Map.ofList
-        |&gt; loop)
-    agent.Error.Add link
-    agent.Start()
-    agent 
-</code></pre>
-
-<p>```</p>
-
-<p>Programming with agents in fsharp is both fun and enabling but there are patterns that will make the overall experience  better in the long run if you get right early. In potential future entries I&rsquo;d like to cover my experience regarding flow control and distribution and any other interesting aspects I may come across.</p>
+<p>Happy New Year!</p>
 ]]></content>
   </entry>
   

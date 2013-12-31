@@ -4,7 +4,7 @@
   <title><![CDATA[coder karl]]></title>
   <link href="http://kjnilsson.github.io/atom.xml" rel="self"/>
   <link href="http://kjnilsson.github.io/"/>
-  <updated>2013-12-18T10:08:54+00:00</updated>
+  <updated>2013-12-31T10:52:03+00:00</updated>
   <id>http://kjnilsson.github.io/</id>
   <author>
     <name><![CDATA[Karl Nilsson]]></name>
@@ -12,6 +12,41 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Reflections on code2013]]></title>
+    <link href="http://kjnilsson.github.io/blog/2013/12/31/reflections-on-code2013/"/>
+    <updated>2013-12-31T10:48:42+00:00</updated>
+    <id>http://kjnilsson.github.io/blog/2013/12/31/reflections-on-code2013</id>
+    <content type="html"><![CDATA[<p><a href="http://code2013.herokuapp.com">code2013</a> is an informal twitter survey of programming languages used in 2013. When I saw the hashtag appear in my timeline I tweeted:</p>
+
+<blockquote class="twitter-tweet" lang="en"><p><a href="https://twitter.com/search?q=%23F#&amp;src=hash">#fsharp</a> <a href="https://twitter.com/search?q=%23code2013&amp;src=hash">#code2013</a> :P</p>&mdash; Karl-Johan Nilsson (@kjnilsson) <a href="https://twitter.com/kjnilsson/statuses/417752233787527169">December 30, 2013</a></blockquote>
+
+
+<script async src="http://kjnilsson.github.io//platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+
+<p></p>
+
+<p>..deliberately avoiding this excellent opportunity to show what an exceptional polyglot I am. I wasn&rsquo;t 100% serious of course. I have also written some c# and javascript and dabbled in many other languages but the overall experience is accurate. 2013, for me, really was the year of F#.</p>
+
+<p>I wrote my first F# program in 2009 (exact dates are hazy but it should be thereabouts). It was a simple utility we needed whilst doing performance testing in the Microsoft labs. I didn&rsquo;t really <em>get it</em> at the time. I probably wasn&rsquo;t ready and didn&rsquo;t use it again for several years.</p>
+
+<p>This year was different. This year <a href="http://15below.com">we</a> started using F# and certainly for the latter half of the year my tweet is accurate. I wrote distributed, server side software in fsharp and that is what I did.</p>
+
+<p>Naturally solely focussing on a single language isn&rsquo;t healthy in the long run but this year it is what I needed to do for a couple of reasons. It involved a paradigm shift from OOP to Functional (First). Paradigm shifts are natural events but significant effort is still required to really <em>get</em> and embed oneself in the new paradigm. Also I needed to write good F# cause that is what we were writing the system in and I needed to specialise in order to deliver code to the standard I expect of myself.</p>
+
+<p>Although I was primarily writing F# I didn&rsquo;t just study this language. I was still reading and learning from other languages such as erlang, clojure and haskell. These languages have plenty of interesting features and there is a lot one can learn. The programming principles embedded in erlang has been a great guide when writing and designing distributed systems and I have also much enjoyed Rich Hickey&rsquo;s talks on <a href="http://www.infoq.com/author/Rich-Hickey">not-only-clojure</a>.</p>
+
+<p>In my programming career 2013 has been the most fun, challenging and rewarding year so far.</p>
+
+<p>Will I just do F# in 2014? There will most likely be a great deal of it but I hope I will now have the capacity to take on real (ish) work in other languages, in particular erlang and clojure. No doubt I&rsquo;ll be writing a fair bit of javascript as well. Its ubiquity is hard to ignore.</p>
+
+<p>It is going to be hard to make 2014 as exciting as 2013 but I am going to try.</p>
+
+<p>Happy New Year!</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[On Microservices]]></title>
