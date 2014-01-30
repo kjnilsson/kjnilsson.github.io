@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: messaging | coder karl]]></title>
+  <link href="http://kjnilsson.github.io/blog/categories/messaging/atom.xml" rel="self"/>
+  <link href="http://kjnilsson.github.io/"/>
+  <updated>2014-01-30T16:20:11+00:00</updated>
+  <id>http://kjnilsson.github.io/</id>
+  <author>
+    <name><![CDATA[Karl Nilsson]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Spread The Poison]]></title>
+    <link href="http://kjnilsson.github.io/blog/2014/01/30/spread-the-poison/"/>
+    <updated>2014-01-30T15:47:23+00:00</updated>
+    <id>http://kjnilsson.github.io/blog/2014/01/30/spread-the-poison</id>
+    <content type="html"><![CDATA[<blockquote><p>What is food to one man is bitter poison to others.
+<strong>Lucretius</strong></p></blockquote>
+
+<h4>What poison?</h4>
+
+<p>For the purposes of this blog post lets define a <em>posion message</em> as:</p>
+
+<blockquote><p><em>a message that when consumed by some process causes the process to reliably exit unexpectedly</em></p></blockquote>
+
+<p>This blog aims to explore strategies for dealing with poison messages and how they are implemented in a few popular messaging systems.</p>
+
+<p>This definition above is not one that implies intent of any kind. It is just a message that, possibly due to unexpected data or an implementation bug, causes a process terminate abnormally. Crash. Exit. Whatever.</p>
+
+<p>Naturally you want your message consumers to not contain such serious bugs and be able to handle all possibly input scenarios but this expectation isn&rsquo;t always practical in running, continuously deployed systems. In traditional, &ldquo;fat service&rdquo; systems these scenarios typically cause the service to crash and stop functioning. <em>Support/operations/someone else</em> will pick up and manually fix it and on goes the system. No big deal apart from a few apologies to a few customers. Right? We all used to do it like this no?</p>
+
+<p>In a fault-tolerant system designed to keep going crashes are expected, sometimes even desired which means that crashed processes may be supervised and automatically restarted after failure. In these kinds of systems poisonous messages can become a real nuisance. The message that caused a crash may get redelivered to either another consumer (if load-balancing) or to the original service after it has been restarted, causing yet another crash, and another, and another until it is somehow manually removed from the system. This can have disastrous consequences for other processing which should have continued quite happily but instead has to contend with the overhead of crashing services.</p>
+
+<h4>What to do when the poison hits</h4>
+
+<ol>
+<li><strong>Identify</strong>
+The first step is to somehow identify that you have a message that is truly poisonous and not just due to a temporary network glitch or some other recoverable scenario. Ideally the number of false positives should be as low as possible, especially for systems where timely processing of messages is key such as notifying airline passengers of a delay or cancellation of a flight.</li>
+<li><strong>Remove / Quarantine</strong>
+Secondly the message needs to be removed from the system. Ideally to some holding area / queue where it can be analysed. Analysis is typically a manual process which could add significant latency to systems that run 24/7.</li>
+<li><strong>Alert</strong>
+Thirdly the alarm bells need to go off to get a human to look at the quarantined message and work out what to do.</li>
+</ol>
+
+
+<p>Of the above number 1 is the most difficult as in a messaging system and there can be several places this can be done.</p>
+
+<ul>
+<li><p><strong>Consumer</strong>
+Identifying poison at the consumption stage is difficult. It assumes the message carries some kind of meta data with it that allows the consumer to make a decision as to whether to attempt processing or reject it (to some error queue). As the definition of a poison message assumes an unhandled, unexpected scenario this can be difficult without attempting to actually process it, which will crash the process, etc. etc&hellip; Chicken and egg scenario. Avoid if at all possible.</p></li>
+<li><p><strong>Producer</strong>
+The producer of a message could potentially identify poison assuming the messaging protocol contains some kind of acknowledgement (ack) from the consumer that a message was successfully processed. If an ack isn&rsquo;t received within an appropriate amount of time or if other events suggest failure (such as being disconnected) then the producer could retry some limited number of times until it considers the message un-processable and stops attempting delivery.
+This approach assumes a fairly coupled, broker-less, point-to-point messaging scenario and puts the responsibility solely on the messaging client code.</p></li>
+<li><p><strong>Broker</strong>
+If you use some kind of intermediary to route messages this is a good place to make poison messaging decisions. Again a simple retry-n-times strategy would work well but it would allow the client code to stay simple and move the responsibility to the dedicated messaging broker.</p></li>
+</ul>
+
+
+<h4>MSMQ</h4>
+
+<p>MSMQ is a point-to-point, store-and-forward messaging system running on Microsoft Windows.</p>
+
+<p>The <a href="http://msdn.microsoft.com/en-us/library/aa395218(v=vs.110">MSDN documentation</a>.aspx) includes an article on poison message handling.</p>
+
+<p>Transacted reads where a consumer reads messages off it&rsquo;s local MSMQ queue can result in the message being put back onto the queue if an exception occurs during processing. MSMQ allows the rate and strategy for doing so to be configured:</p>
+
+<p>``` xml
+&lt;binding name=&ldquo;PoisonBinding&rdquo;</p>
+
+<pre><code>receiveRetryCount="0"
+maxRetryCycles="1"
+retryCycleDelay="00:00:05"                      
+receiveErrorHandling="Move"&gt;
+</code></pre>
+
+<p></binding>
+```</p>
+
+<p>This configuration needs to be present for every consumer which means there is no way to centrally control the poison message strategy. MSMQ allows the message to be put on a retry queue for some time and set a delay until it gets redelivered to the target queue again. This is quite nice as it should reduce the number of messages identified as poison due to transient network conditions or unavailable downstream services (for example).</p>
+
+<h4>ZeroMQ</h4>
+
+<p>When using ZeroMQ you are pretty much forced to learn how to do messaging properly as well as really thing through what degree of reliability you application needs. Consequently you will need to implement your own strategy for dealing with consumer failures such as in the pirate patterns in chapter 4 of the excellent <a href="http://zguide.zeromq.org/page:all">zguide</a></p>
+
+<p>In short the &lsquo;pirate&rsquo; patterns use retries, either by the client (producer) or by a middle man broker. I&rsquo;d recommend reading this chapter for a thoughtful discussion on reliability in messaging systems.</p>
+
+<h4>RabbitMQ</h4>
+
+<p>RabbitMQ is a broker based messaging system and is thus excellently poised to implement the third strategy where the broker identifies and handlers poisonous messages. At the time of writing it doesn&rsquo;t although a strategy like this is defined int he AMQP 9.1 spec (basic / deliver / 01 on the RabbitMQ [website] (<a href="https://www.rabbitmq.com/specification.html">https://www.rabbitmq.com/specification.html</a>)). The current status is <em>planned</em> and although I have been informed the priority of this feature has been increased it has been at this status for ~2 years.</p>
+
+<p>Page 53-54 of <a href="https://www.rabbitmq.com/resources/specs/amqp-xml-doc0-9-1.pdf">AMQP 0.9.1 xml documentation</a></p>
+
+<blockquote><p><em>The server SHOULD track the number of times a message has been delivered to clients and when a message is redelivered a certain number of times ­ e.g. 5 times ­ without being acknowledged, the server SHOULD consider the message to be unprocessable (possibly causing client applications to abort), and move the message to a dead letter queue.</em></p></blockquote>
+
+<p>So RabbitMQ doesn&rsquo;t yet have this feature and there is no way of finding out when and if it will ever be implemented. So what options do we have then for handing poison in RabbitMQ?</p>
+
+<p>AMQP messages carry around a lot of meta data and there is one property that &ndash; the <em>redelivered</em> flag. Unfortunately this is a boolean and only allows us a binary choice. In my opinion this is hopelessly inadequate. There are many reasons why a message could cause a consumer to crash on a particular occasions but not for the next or for a different consumer of the same type. A hard drive could have unexpectedly filled up.  We <em>could</em> inspect the <em>redelivered</em> property and discard all messages for which it is true before attempting to processes it (a weak version of option 1) but this is likely to force many valid messages (i.e. not poison) to the error queue.</p>
+
+<p>Some horrendous <a href="https://groups.google.com/forum/#!searchin/rabbitmq-discuss/poison/rabbitmq-discuss/gRGFtDclga0/Ss4fiesFqIIJ">suggestion</a> where secondary queues are used to increase the number of delivery attempts have been suggested but this is pure accidental complexity for something that should be handled by the broker.</p>
+
+<p>Arguably it could be said that any system that relies on the consumer to implement the strategy doesn&rsquo;t really have strategy either as the service might be made to crash before the poison has been handled. The only safe place to do it is in the broker / or producer and I feel RabbitMQ is missing a fundamental trick when it comes to poison message handling.</p>
+
+<p>In short, unless you are willing to accept a single processing attempt as your limit which inevitable will result in a much large number of messages incorrectly identified as poison, RabbitMQ doesn&rsquo;t have a poison message handling strategy. This may come as a surprise to some, like ourselves, which have already heavily invested in RabbitMQ as a messaging platform.</p>
+
+<p>Poison message handling may not be the first aspect to consider when choosing a messaging platform for your application but it is on that is important to get right and it can be awkward to retro-fit for systems that do not have a strategy for it to begin with.</p>
+
+<p>It&rsquo;ll be fine right?</p>
+]]></content>
+  </entry>
+  
+</feed>
