@@ -4,7 +4,7 @@
   <title><![CDATA[Category: messaging | coder karl]]></title>
   <link href="http://kjnilsson.github.io/blog/categories/messaging/atom.xml" rel="self"/>
   <link href="http://kjnilsson.github.io/"/>
-  <updated>2014-01-30T16:20:11+00:00</updated>
+  <updated>2014-01-30T19:25:15+00:00</updated>
   <id>http://kjnilsson.github.io/</id>
   <author>
     <name><![CDATA[Karl Nilsson]]></name>
@@ -84,7 +84,7 @@ receiveErrorHandling="Move"&gt;
 
 <h4>ZeroMQ</h4>
 
-<p>When using ZeroMQ you are pretty much forced to learn how to do messaging properly as well as really thing through what degree of reliability you application needs. Consequently you will need to implement your own strategy for dealing with consumer failures such as in the pirate patterns in chapter 4 of the excellent <a href="http://zguide.zeromq.org/page:all">zguide</a></p>
+<p>When using ZeroMQ you are pretty much forced to learn how to do messaging properly as well as really think through what degree of reliability your application needs. Consequently you will need to implement your own strategy for dealing with consumer failures such as in the pirate patterns in chapter 4 of the excellent <a href="http://zguide.zeromq.org/page:all">zguide</a></p>
 
 <p>In short the &lsquo;pirate&rsquo; patterns use retries, either by the client (producer) or by a middle man broker. I&rsquo;d recommend reading this chapter for a thoughtful discussion on reliability in messaging systems.</p>
 
