@@ -4,7 +4,7 @@
   <title><![CDATA[coder karl]]></title>
   <link href="http://kjnilsson.github.io/atom.xml" rel="self"/>
   <link href="http://kjnilsson.github.io/"/>
-  <updated>2015-08-08T14:23:18+01:00</updated>
+  <updated>2015-08-08T22:24:13+01:00</updated>
   <id>http://kjnilsson.github.io/</id>
   <author>
     <name><![CDATA[Karl Nilsson]]></name>
@@ -14,11 +14,11 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Not designing for fault-tolerance]]></title>
+    <title type="html"><![CDATA[Not designing for Fault-tolerance]]></title>
     <link href="http://kjnilsson.github.io/blog/2015/08/08/not-designing-for-fault-tolerance/"/>
     <updated>2015-08-08T14:15:02+01:00</updated>
     <id>http://kjnilsson.github.io/blog/2015/08/08/not-designing-for-fault-tolerance</id>
-    <content type="html"><![CDATA[<p>As an industry I think we are pretty good at not designing for fault-tolerance, scalability and performance. And who can really blame us? These non functional &ldquo;requirements&rdquo; (NFRs) are hard to design for, make estimates and development costs rocket and mandate the introduction of new concepts to be learnt. Best avoided. We can&rsquo;t afford it.</p>
+    <content type="html"><![CDATA[<p>As an industry I think we (software developers) are pretty good at not designing for fault-tolerance, scalability and performance. And who can really blame us? These non functional &ldquo;requirements&rdquo; (NFRs) are hard to design for, make estimates and development costs rocket and mandate the introduction of new concepts to be learnt. Best avoided. We can&rsquo;t afford it.</p>
 
 <p>You Ain&rsquo;t Gonna Need It (YAGNI).</p>
 
