@@ -4,7 +4,7 @@
   <title><![CDATA[Category: erlang | coder karl]]></title>
   <link href="http://kjnilsson.github.io/blog/categories/erlang/atom.xml" rel="self"/>
   <link href="http://kjnilsson.github.io/"/>
-  <updated>2014-01-30T19:25:15+00:00</updated>
+  <updated>2015-08-08T14:23:18+01:00</updated>
   <id>http://kjnilsson.github.io/</id>
   <author>
     <name><![CDATA[Karl Nilsson]]></name>
@@ -12,6 +12,39 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Not designing for fault-tolerance]]></title>
+    <link href="http://kjnilsson.github.io/blog/2015/08/08/not-designing-for-fault-tolerance/"/>
+    <updated>2015-08-08T14:15:02+01:00</updated>
+    <id>http://kjnilsson.github.io/blog/2015/08/08/not-designing-for-fault-tolerance</id>
+    <content type="html"><![CDATA[<p>As an industry I think we are pretty good at not designing for fault-tolerance, scalability and performance. And who can really blame us? These non functional &ldquo;requirements&rdquo; (NFRs) are hard to design for, make estimates and development costs rocket and mandate the introduction of new concepts to be learnt. Best avoided. We can&rsquo;t afford it.</p>
+
+<p>You Ain&rsquo;t Gonna Need It (YAGNI).</p>
+
+<p>Correct. I Ain&rsquo;t.</p>
+
+<p><em>Or am I?</em></p>
+
+<p>My first task as an application architect many years ago was to redesign a newly developed three-tier application so that it would at least perform adequately. It wasn&rsquo;t easy and the end result wasn&rsquo;t pretty (code-wise and architecturally) but at least it was mostly usable from a performance perspective. How can it be that it is somehow acceptable to write a new application that doesn&rsquo;t perform well enough to be used?</p>
+
+<p>Why has there been so many occasions and conversations since that day about how to retro-fit scalability and fault-tolerance into services that lack them?</p>
+
+<p>It is, of course, because not enough emphasis is put on these aspects at the design stage. Why is it then that they can so easily be put to one side, ignored and postponed? Why are these &ldquo;requirements&rdquo; so rarely emphasised up-front when the design decisions are made?</p>
+
+<p><em>Time to market</em> is one very valid influence. There is little point making a reliable system months after your competitors have already mopped up the bulk of the customers.</p>
+
+<p><em>Domain focus</em> is another which I am not going to argue against. It is sensible to try to provide a good solution to the problem domain first at the expense of NFRs. (First make it right, then make it fast/tolerant/scalable).</p>
+
+<p>Our tendency to ignore fault-tolerance, scalability and performance (FTSP) affects our technology choices. If fault-tolerance is likely to become important in the future would we really choose .NET, ruby or even go as our runtime/language of choice? I doubt it, I&rsquo;ve written systems that have these properties in .NET but it was hard, time-consuming, error-prone. It always felt like there should be a better way. Something that would help me a bit more.</p>
+
+<p>Perhaps it is actually time to start using that that thing that everyone talks about but nobody really uses? That strange runtime with it&rsquo;s odd language. That <em>Erlang</em> thing.</p>
+
+<p>Naturally using erlang (or rather the erlang runtime, the BEAM) won&rsquo;t automatically make anything scalable, fault-tolerant or performant, let&rsquo;s make that really clear. But maybe targeting this runtime will allow us to more sensibly design our application such that we can more easily retro-fit fault-tolerance without a big rewrite. Perhaps having a sensible isolation model, built-in distribution and well known design patterns for fault-tolerance will put us onto a path of likely success once these requirements suddenly float to the top of the list?</p>
+
+<p>If we are going to continue ignoring fault-tolerance, scalability and performance let&rsquo;s at least do it in a sensible manner.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[How Agents Fail]]></title>
