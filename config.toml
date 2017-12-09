@@ -1,5 +1,0 @@
-baseURL = "http://kjnilsson.github.io/"
-languageCode = "en-us"
-title = "kjnilsson:blog/0"
-theme = "kiss"
-publishDir = "docs"
