@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[coder karl]]></title>
+  <link href="http://kjnilsson.github.io/atom.xml" rel="self"/>
+  <link href="http://kjnilsson.github.io/"/>
+  <updated>2015-08-08T22:24:13+01:00</updated>
+  <id>http://kjnilsson.github.io/</id>
+  <author>
+    <name><![CDATA[Karl Nilsson]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Not designing for Fault-tolerance]]></title>
+    <link href="http://kjnilsson.github.io/blog/2015/08/08/not-designing-for-fault-tolerance/"/>
+    <updated>2015-08-08T14:15:02+01:00</updated>
+    <id>http://kjnilsson.github.io/blog/2015/08/08/not-designing-for-fault-tolerance</id>
+    <content type="html"><![CDATA[<p>As an industry I think we (software developers) are pretty good at not designing for fault-tolerance, scalability and performance. And who can really blame us? These non functional &ldquo;requirements&rdquo; (NFRs) are hard to design for, make estimates and development costs rocket and mandate the introduction of new concepts to be learnt. Best avoided. We can&rsquo;t afford it.</p>
+
+<p>You Ain&rsquo;t Gonna Need It (YAGNI).</p>
+
+<p>Correct. I Ain&rsquo;t.</p>
+
+<p><em>Or am I?</em></p>
+
+<p>My first task as an application architect many years ago was to redesign a newly developed three-tier application so that it would at least perform adequately. It wasn&rsquo;t easy and the end result wasn&rsquo;t pretty (code-wise and architecturally) but at least it was mostly usable from a performance perspective. How can it be that it is somehow acceptable to write a new application that doesn&rsquo;t perform well enough to be used?</p>
+
+<p>Why has there been so many occasions and conversations since that day about how to retro-fit scalability and fault-tolerance into services that lack them?</p>
+
+<p>It is, of course, because not enough emphasis is put on these aspects at the design stage. Why is it then that they can so easily be put to one side, ignored and postponed? Why are these &ldquo;requirements&rdquo; so rarely emphasised up-front when the design decisions are made?</p>
+
+<p><em>Time to market</em> is one very valid influence. There is little point making a reliable system months after your competitors have already mopped up the bulk of the customers.</p>
+
+<p><em>Domain focus</em> is another which I am not going to argue against. It is sensible to try to provide a good solution to the problem domain first at the expense of NFRs. (First make it right, then make it fast/tolerant/scalable).</p>
+
+<p>Our tendency to ignore fault-tolerance, scalability and performance (FTSP) affects our technology choices. If fault-tolerance is likely to become important in the future would we really choose .NET, ruby or even go as our runtime/language of choice? I doubt it, I&rsquo;ve written systems that have these properties in .NET but it was hard, time-consuming, error-prone. It always felt like there should be a better way. Something that would help me a bit more.</p>
+
+<p>Perhaps it is actually time to start using that that thing that everyone talks about but nobody really uses? That strange runtime with it&rsquo;s odd language. That <em>Erlang</em> thing.</p>
+
+<p>Naturally using erlang (or rather the erlang runtime, the BEAM) won&rsquo;t automatically make anything scalable, fault-tolerant or performant, let&rsquo;s make that really clear. But maybe targeting this runtime will allow us to more sensibly design our application such that we can more easily retro-fit fault-tolerance without a big rewrite. Perhaps having a sensible isolation model, built-in distribution and well known design patterns for fault-tolerance will put us onto a path of likely success once these requirements suddenly float to the top of the list?</p>
+
+<p>If we are going to continue ignoring fault-tolerance, scalability and performance let&rsquo;s at least do it in a sensible manner.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Spread The Poison]]></title>
+    <link href="http://kjnilsson.github.io/blog/2014/01/30/spread-the-poison/"/>
+    <updated>2014-01-30T15:47:23+00:00</updated>
+    <id>http://kjnilsson.github.io/blog/2014/01/30/spread-the-poison</id>
+    <content type="html"><![CDATA[<blockquote><p>What is food to one man is bitter poison to others.
+<strong>Lucretius</strong></p></blockquote>
+
+<h4>What poison?</h4>
+
+<p>For the purposes of this blog post lets define a <em>posion message</em> as:</p>
+
+<blockquote><p><em>a message that when consumed by some process causes the process to reliably exit unexpectedly</em></p></blockquote>
+
+<p>This blog aims to explore strategies for dealing with poison messages and how they are implemented in a few popular messaging systems.</p>
+
+<p>This definition above is not one that implies intent of any kind. It is just a message that, possibly due to unexpected data or an implementation bug, causes a process terminate abnormally. Crash. Exit. Whatever.</p>
+
+<p>Naturally you want your message consumers to not contain such serious bugs and be able to handle all possibly input scenarios but this expectation isn&rsquo;t always practical in running, continuously deployed systems. In traditional, &ldquo;fat service&rdquo; systems these scenarios typically cause the service to crash and stop functioning. <em>Support/operations/someone else</em> will pick up and manually fix it and on goes the system. No big deal apart from a few apologies to a few customers. Right? We all used to do it like this no?</p>
+
+<p>In a fault-tolerant system designed to keep going crashes are expected, sometimes even desired which means that crashed processes may be supervised and automatically restarted after failure. In these kinds of systems poisonous messages can become a real nuisance. The message that caused a crash may get redelivered to either another consumer (if load-balancing) or to the original service after it has been restarted, causing yet another crash, and another, and another until it is somehow manually removed from the system. This can have disastrous consequences for other processing which should have continued quite happily but instead has to contend with the overhead of crashing services.</p>
+
+<h4>What to do when the poison hits</h4>
+
+<ol>
+<li><strong>Identify</strong>
+The first step is to somehow identify that you have a message that is truly poisonous and not just due to a temporary network glitch or some other recoverable scenario. Ideally the number of false positives should be as low as possible, especially for systems where timely processing of messages is key such as notifying airline passengers of a delay or cancellation of a flight.</li>
+<li><strong>Remove / Quarantine</strong>
+Secondly the message needs to be removed from the system. Ideally to some holding area / queue where it can be analysed. Analysis is typically a manual process which could add significant latency to systems that run 24/7.</li>
+<li><strong>Alert</strong>
+Thirdly the alarm bells need to go off to get a human to look at the quarantined message and work out what to do.</li>
+</ol>
+
+
+<p>Of the above number 1 is the most difficult as in a messaging system and there can be several places this can be done.</p>
+
+<ul>
+<li><p><strong>Consumer</strong>
+Identifying poison at the consumption stage is difficult. It assumes the message carries some kind of meta data with it that allows the consumer to make a decision as to whether to attempt processing or reject it (to some error queue). As the definition of a poison message assumes an unhandled, unexpected scenario this can be difficult without attempting to actually process it, which will crash the process, etc. etc&hellip; Chicken and egg scenario. Avoid if at all possible.</p></li>
+<li><p><strong>Producer</strong>
+The producer of a message could potentially identify poison assuming the messaging protocol contains some kind of acknowledgement (ack) from the consumer that a message was successfully processed. If an ack isn&rsquo;t received within an appropriate amount of time or if other events suggest failure (such as being disconnected) then the producer could retry some limited number of times until it considers the message un-processable and stops attempting delivery.
+This approach assumes a fairly coupled, broker-less, point-to-point messaging scenario and puts the responsibility solely on the messaging client code.</p></li>
+<li><p><strong>Broker</strong>
+If you use some kind of intermediary to route messages this is a good place to make poison messaging decisions. Again a simple retry-n-times strategy would work well but it would allow the client code to stay simple and move the responsibility to the dedicated messaging broker.</p></li>
+</ul>
+
+
+<h4>MSMQ</h4>
+
+<p>MSMQ is a point-to-point, store-and-forward messaging system running on Microsoft Windows.</p>
+
+<p>The <a href="http://msdn.microsoft.com/en-us/library/aa395218(v=vs.110">MSDN documentation</a>.aspx) includes an article on poison message handling.</p>
+
+<p>Transacted reads where a consumer reads messages off it&rsquo;s local MSMQ queue can result in the message being put back onto the queue if an exception occurs during processing. MSMQ allows the rate and strategy for doing so to be configured:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;binding</span> <span class="na">name=</span><span class="s">&quot;PoisonBinding&quot;</span>
+</span><span class='line'>    <span class="na">receiveRetryCount=</span><span class="s">&quot;0&quot;</span>
+</span><span class='line'>    <span class="na">maxRetryCycles=</span><span class="s">&quot;1&quot;</span>
+</span><span class='line'>    <span class="na">retryCycleDelay=</span><span class="s">&quot;00:00:05&quot;</span>
+</span><span class='line'>    <span class="na">receiveErrorHandling=</span><span class="s">&quot;Move&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'><span class="nt">&lt;/binding&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This configuration needs to be present for every consumer which means there is no way to centrally control the poison message strategy. MSMQ allows the message to be put on a retry queue for some time and set a delay until it gets redelivered to the target queue again. This is quite nice as it should reduce the number of messages identified as poison due to transient network conditions or unavailable downstream services (for example).</p>
+
+<h4>ZeroMQ</h4>
+
+<p>When using ZeroMQ you are pretty much forced to learn how to do messaging properly as well as really think through what degree of reliability your application needs. Consequently you will need to implement your own strategy for dealing with consumer failures such as in the pirate patterns in chapter 4 of the excellent <a href="http://zguide.zeromq.org/page:all">zguide</a></p>
+
+<p>In short the &lsquo;pirate&rsquo; patterns use retries, either by the client (producer) or by a middle man broker. I&rsquo;d recommend reading this chapter for a thoughtful discussion on reliability in messaging systems.</p>
+
+<h4>RabbitMQ</h4>
+
+<p>RabbitMQ is a broker based messaging system and is thus excellently poised to implement the third strategy where the broker identifies and handlers poisonous messages. At the time of writing it doesn&rsquo;t although a strategy like this is defined int he AMQP 9.1 spec (basic / deliver / 01 on the RabbitMQ [website] (<a href="https://www.rabbitmq.com/specification.html">https://www.rabbitmq.com/specification.html</a>)). The current status is <em>planned</em> and although I have been informed the priority of this feature has been increased it has been at this status for ~2 years.</p>
+
+<p>Page 53-54 of <a href="https://www.rabbitmq.com/resources/specs/amqp-xml-doc0-9-1.pdf">AMQP 0.9.1 xml documentation</a></p>
+
+<blockquote><p><em>The server SHOULD track the number of times a message has been delivered to clients and when a message is redelivered a certain number of times ­ e.g. 5 times ­ without being acknowledged, the server SHOULD consider the message to be unprocessable (possibly causing client applications to abort), and move the message to a dead letter queue.</em></p></blockquote>
+
+<p>So RabbitMQ doesn&rsquo;t yet have this feature and there is no way of finding out when and if it will ever be implemented. So what options do we have then for handing poison in RabbitMQ?</p>
+
+<p>AMQP messages carry around a lot of meta data and there is one property that &ndash; the <em>redelivered</em> flag. Unfortunately this is a boolean and only allows us a binary choice. In my opinion this is hopelessly inadequate. There are many reasons why a message could cause a consumer to crash on a particular occasions but not for the next or for a different consumer of the same type. A hard drive could have unexpectedly filled up.  We <em>could</em> inspect the <em>redelivered</em> property and discard all messages for which it is true before attempting to processes it (a weak version of option 1) but this is likely to force many valid messages (i.e. not poison) to the error queue.</p>
+
+<p>Some horrendous <a href="https://groups.google.com/forum/#!searchin/rabbitmq-discuss/poison/rabbitmq-discuss/gRGFtDclga0/Ss4fiesFqIIJ">suggestion</a> where secondary queues are used to increase the number of delivery attempts have been suggested but this is pure accidental complexity for something that should be handled by the broker.</p>
+
+<p>Arguably it could be said that any system that relies on the consumer to implement the strategy doesn&rsquo;t really have strategy either as the service might be made to crash before the poison has been handled. The only safe place to do it is in the broker / or producer and I feel RabbitMQ is missing a fundamental trick when it comes to poison message handling.</p>
+
+<p>In short, unless you are willing to accept a single processing attempt as your limit which inevitable will result in a much large number of messages incorrectly identified as poison, RabbitMQ doesn&rsquo;t have a poison message handling strategy. This may come as a surprise to some, like ourselves, which have already heavily invested in RabbitMQ as a messaging platform.</p>
+
+<p>Poison message handling may not be the first aspect to consider when choosing a messaging platform for your application but it is on that is important to get right and it can be awkward to retro-fit for systems that do not have a strategy for it to begin with.</p>
+
+<p>It&rsquo;ll be fine right?</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Reflections on code2013]]></title>
+    <link href="http://kjnilsson.github.io/blog/2013/12/31/reflections-on-code2013/"/>
+    <updated>2013-12-31T10:48:42+00:00</updated>
+    <id>http://kjnilsson.github.io/blog/2013/12/31/reflections-on-code2013</id>
+    <content type="html"><![CDATA[<p><a href="http://code2013.herokuapp.com">code2013</a> is an informal twitter survey of programming languages used in 2013. When I saw the hashtag appear in my timeline I tweeted:</p>
+
+<blockquote class="twitter-tweet" lang="en"><p><a href="https://twitter.com/search?q=%23F#&amp;src=hash">#fsharp</a> <a href="https://twitter.com/search?q=%23code2013&amp;src=hash">#code2013</a> :P</p>&mdash; Karl-Johan Nilsson (@kjnilsson) <a href="https://twitter.com/kjnilsson/statuses/417752233787527169">December 30, 2013</a></blockquote>
+
+
+<script async src="http://kjnilsson.github.io//platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+
+<p></p>
+
+<p>..deliberately avoiding this excellent opportunity to show what an exceptional polyglot I am. I wasn&rsquo;t 100% serious of course. I have also written some c# and javascript and dabbled in many other languages but the overall experience is accurate. 2013, for me, really was the year of F#.</p>
+
+<p>I wrote my first F# program in 2009 (exact dates are hazy but it should be thereabouts). It was a simple utility we needed whilst doing performance testing in the Microsoft labs. I didn&rsquo;t really <em>get it</em> at the time. I probably wasn&rsquo;t ready and didn&rsquo;t use it again for several years.</p>
+
+<p>This year was different. This year <a href="http://15below.com">we</a> started using F# and certainly for the latter half of the year my tweet is accurate. I wrote distributed, server side software in F# and that is what I did.</p>
+
+<p>Naturally solely focussing on a single language isn&rsquo;t healthy in the long run but this year it is what I needed to do for a couple of reasons. It involved a paradigm shift from OOP to Functional (First). Paradigm shifts are natural events but significant effort is still required to really <em>get</em> and embed oneself in the new paradigm. Also I needed to write good F# cause that is what we were writing the system in and I needed to specialise in order to deliver code to the standard I expect of myself.</p>
+
+<p>Although I was primarily writing F# I didn&rsquo;t just study this language. I was still reading and learning from other languages such as erlang, clojure and haskell. These languages have plenty of interesting features and there is a lot one can learn. The programming principles embedded in erlang has been a great guide when writing and designing distributed systems and I have also much enjoyed Rich Hickey&rsquo;s talks on <a href="http://www.infoq.com/author/Rich-Hickey">not-only-clojure</a>.</p>
+
+<p>In my programming career 2013 has been the most fun, challenging and rewarding year so far.</p>
+
+<p>Will I just do F# in 2014? There will most likely be a great deal of it but I hope I will now have the capacity to take on real (ish) work in other languages, in particular erlang and clojure. No doubt I&rsquo;ll be writing a fair bit of javascript as well. Its ubiquity is hard to ignore.</p>
+
+<p>It is going to be hard to make 2014 as exciting as 2013 but I am going to try.</p>
+
+<p>Happy New Year!</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[On Microservices]]></title>
+    <link href="http://kjnilsson.github.io/blog/2013/12/18/on-microservices/"/>
+    <updated>2013-12-18T10:01:57+00:00</updated>
+    <id>http://kjnilsson.github.io/blog/2013/12/18/on-microservices</id>
+    <content type="html"><![CDATA[<p>Imagine a set of functions:</p>
+
+<pre><code>[f1;f2;f3;f4;f5;f6;f7;f8;f9]
+</code></pre>
+
+<p>Here they are in a &ldquo;microservices&rdquo; architecture</p>
+
+<p><img src="http://kjnilsson.github.io/images/microservices1.png" alt="microservices1" /></p>
+
+<p>Here they are after some period of running clustered according to their interactions.</p>
+
+<p><img src="http://kjnilsson.github.io/images/microservices2.png" alt="microservices2" /></p>
+
+<p>Here is a set of cohesive &ldquo;normal&rdquo; sized services plus some additional &ldquo;unclassified&rdquo; microservices.</p>
+
+<p><img src="http://kjnilsson.github.io/images/microservices3.png" alt="microservices3" /></p>
+
+<p>Does it even work like this? Can a system evolve in this fashion? It would require a lot of discipline and a fair bit of forward planning but I think it is possible but I suppose we&rsquo;ll see&hellip;</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[How Agents Fail]]></title>
+    <link href="http://kjnilsson.github.io/blog/2013/12/16/how-agents-fail/"/>
+    <updated>2013-12-16T10:00:27+00:00</updated>
+    <id>http://kjnilsson.github.io/blog/2013/12/16/how-agents-fail</id>
+    <content type="html"><![CDATA[<p>Agents (<code>MailboxProcessor</code> in fsharp) can be incredibly useful. They allow you to control concurrency and access to shared state in a simple and safe manner, something that is surprisingly hard in languages without similar abstractions. Having spent the last 6 months writing a fairly decently sized, distributed business application in fsharp it proved natural for us to make frequent use of agents almost to the extent that <em>&lsquo;just add another agent&rsquo;</em> often is suggested as the fix for most problems that we encounter.
+Naturally this approach is not without problems. Fsharp agents do not have any default strategies of how to work with multiple agents or any built-in strategies for dealing with agent failures. All these aspects need to be handled in code and this blog entry aims to explore a couple of options for dealing with unhandled exceptions in agents.</p>
+
+<p>So how <em>do</em> agents fail? Silently, it turns out. When an unhandled exception occurs in the body of an agent the exception is not allowed to escape the agent unless you subscribe to the &lsquo;Error&rsquo; event. This may seem an unusual default to have for developers used to traditional .NET/Java exception handling but if you look at other languages which may have inspired this model (e.g. <a href="http://www.erlang.org/doc/reference_manual/processes.html">erlang</a>) it actually makes perfect sense. An agent (or <em>process</em> in erlang) is an isolated unit of computation such that the failure of one should not affect other agents unless explicitly linked together to form a <em>supervision tree</em>. The supervision tree is a key pattern that is used to build fault tolerant application in Erlang.
+Fsharp doesn&rsquo;t have an api for creating supervision trees but does provide all the components needed to do so (at least for in-process).</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='fsharp'><span class='line'><span class="k">let</span> <span class="n">spawn</span> <span class="bp">()</span> <span class="o">=</span>
+</span><span class='line'>    <span class="nn">MailboxProcessor</span><span class="p">.</span><span class="nc">Start</span> <span class="o">(</span><span class="k">fun</span> <span class="n">inbox</span> <span class="o">-&gt;</span>
+</span><span class='line'>        <span class="k">let</span> <span class="k">rec</span> <span class="n">loop</span> <span class="n">state</span> <span class="o">=</span>
+</span><span class='line'>            <span class="n">async</span> <span class="o">{</span>
+</span><span class='line'>                <span class="k">let</span><span class="o">!</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">inbox</span><span class="o">.</span><span class="nc">Receive</span> <span class="bp">()</span>
+</span><span class='line'>                <span class="k">if</span> <span class="n">msg</span> <span class="o">=</span> <span class="mi">42</span> <span class="k">then</span> <span class="n">failwith</span> <span class="s2">&quot;can&#39;t catch me&quot;</span>
+</span><span class='line'>                <span class="k">else</span>
+</span><span class='line'>                    <span class="k">return</span><span class="o">!</span> <span class="n">loop</span> <span class="o">(</span><span class="n">state</span> <span class="o">+</span> <span class="n">msg</span><span class="o">)</span> <span class="o">}</span>
+</span><span class='line'>        <span class="n">loop</span> <span class="mi">0</span><span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Catch it!</h3>
+
+<p>So an agent that throws an unobserved exception is effectively rendered useless. New messages will be accepted but never processed and although the agent handler has failed they will still be added to the internal, unbounded mailbox queue potentially causing an eventually fatal memory leak.</p>
+
+<p>This is often undesirable, so what can we do to address it? The simplest possible way to simulate &lsquo;classic&rsquo; .NET exception handling behaviour is to re-raise any exceptions on to the thread the agent was created on and rely on some other exception handler to catch it.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='fsharp'><span class='line'><span class="k">let</span> <span class="n">agent</span> <span class="o">=</span> <span class="nn">MailboxProcessor</span><span class="p">.</span><span class="nc">Start</span><span class="bp">()</span>
+</span><span class='line'><span class="n">agent</span><span class="o">.</span><span class="nn">Errors</span><span class="p">.</span><span class="nc">Add</span> <span class="n">raise</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>But in many cases we want more detailed control over the strategies we employ to recover from such exceptions. We have already mentioned the solution above: <em>supervision trees</em>.</p>
+
+<h3>Feeling watched&hellip;</h3>
+
+<p>Below follows an example on how to implement a simple supervisor that keeps a registry of <em>id</em> to <em>agent</em> and relaunches any monitored agents that fail. Note that the <code>spawnLink</code> functions add the error handler before starting the agent. This is sensible in the rare occurrence that the agent will fail before the error handler is added. Erlang has a similar <a href="http://www.erlang.org/doc/man/erlang.html#spawn_link-1">function</a> for exactly this reason.</p>
+
+<p>Supervisors allow you to implement sensible restart strategies for failed agents.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+</pre></td><td class='code'><pre><code class='fsharp'><span class='line'><span class="k">module</span> <span class="nc">Worker</span> <span class="o">=</span>
+</span><span class='line'>    <span class="k">open</span> <span class="nc">System</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">type</span> <span class="nc">WorkerProtocol</span> <span class="o">=</span>
+</span><span class='line'>        <span class="o">|</span> <span class="nc">DoWork</span>
+</span><span class='line'>        <span class="o">|</span> <span class="nc">Exit</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">let</span> <span class="n">spawnLink</span> <span class="n">link</span> <span class="o">=</span>
+</span><span class='line'>        <span class="k">let</span> <span class="n">mb</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">MailboxProcessor</span><span class="o">&lt;</span><span class="nc">WorkerProtocol</span><span class="o">&gt;(</span><span class="k">fun</span> <span class="n">inbox</span> <span class="o">-&gt;</span>
+</span><span class='line'>            <span class="k">let</span> <span class="k">rec</span> <span class="n">loop</span> <span class="n">c</span> <span class="o">=</span> <span class="n">async</span> <span class="o">{</span>
+</span><span class='line'>                <span class="k">let</span><span class="o">!</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">inbox</span><span class="o">.</span><span class="nc">Receive</span> <span class="bp">()</span>
+</span><span class='line'>                <span class="k">match</span> <span class="n">msg</span> <span class="k">with</span>
+</span><span class='line'>                <span class="o">|</span> <span class="nc">DoWork</span> <span class="o">-&gt;</span>
+</span><span class='line'>                    <span class="n">printfn</span> <span class="s2">&quot;working...&quot;</span>
+</span><span class='line'>                    <span class="k">do</span><span class="o">!</span> <span class="nn">Async</span><span class="p">.</span><span class="nc">Sleep</span> <span class="mi">250</span>
+</span><span class='line'>                    <span class="k">if</span> <span class="n">c</span> <span class="o">&gt;</span> <span class="mi">4</span> <span class="k">then</span> <span class="n">failwith</span> <span class="s2">&quot;oops&quot;</span>
+</span><span class='line'>                    <span class="k">return</span><span class="o">!</span> <span class="n">loop</span> <span class="o">(</span><span class="n">c</span> <span class="o">+</span> <span class="mi">1</span><span class="o">)</span>
+</span><span class='line'>                <span class="o">|</span> <span class="nc">Exit</span> <span class="o">-&gt;</span>
+</span><span class='line'>                    <span class="bp">()</span> <span class="o">}</span>
+</span><span class='line'>            <span class="n">loop</span> <span class="mi">0</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">mb</span><span class="o">.</span><span class="nn">Error</span><span class="p">.</span><span class="nc">Add</span> <span class="n">link</span>
+</span><span class='line'>        <span class="n">mb</span><span class="o">.</span><span class="nc">Start</span><span class="bp">()</span>
+</span><span class='line'>        <span class="n">mb</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">module</span> <span class="nc">Supervisor</span> <span class="o">=</span>
+</span><span class='line'>    <span class="k">open</span> <span class="nc">System</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">type</span> <span class="nc">SuperProtocol</span> <span class="o">=</span>
+</span><span class='line'>        <span class="o">|</span> <span class="nc">ChildFaulted</span> <span class="k">of</span> <span class="nc">Guid</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">let</span> <span class="n">dispose</span> <span class="o">(</span><span class="n">o</span> <span class="o">:</span> <span class="n">obj</span><span class="o">)</span> <span class="o">=</span>
+</span><span class='line'>        <span class="k">match</span> <span class="n">o</span> <span class="k">with</span>
+</span><span class='line'>        <span class="o">|</span> <span class="o">:?</span> <span class="nc">IDisposable</span> <span class="k">as</span> <span class="n">d</span> <span class="o">-&gt;</span> <span class="n">d</span><span class="o">.</span><span class="nc">Dispose</span><span class="bp">()</span>
+</span><span class='line'>        <span class="o">|</span> <span class="o">_</span> <span class="o">-&gt;</span> <span class="bp">()</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// this is also a spawnLink as other agents could supervise other supervisors</span>
+</span><span class='line'>    <span class="k">let</span> <span class="n">spawnLink</span> <span class="n">link</span> <span class="o">=</span>
+</span><span class='line'>        <span class="k">let</span> <span class="n">agent</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">MailboxProcessor</span><span class="o">&lt;</span><span class="nc">SuperProtocol</span><span class="o">&gt;</span> <span class="o">(</span><span class="k">fun</span> <span class="n">inbox</span> <span class="o">-&gt;</span>
+</span><span class='line'>            <span class="c1">// error handler that sends a message to the supervisor&#39;s inbox that </span>
+</span><span class='line'>            <span class="c1">// a child agent has failed</span>
+</span><span class='line'>            <span class="c1">// In this instane we don&#39;t care which exception was thrown</span>
+</span><span class='line'>            <span class="k">let</span> <span class="n">errorHandler</span> <span class="n">childId</span> <span class="o">=</span> <span class="k">fun</span> <span class="o">_</span> <span class="o">-&gt;</span> <span class="n">inbox</span><span class="o">.</span><span class="nc">Post</span> <span class="o">(</span><span class="nc">ChildFaulted</span> <span class="n">childId</span><span class="o">)</span>
+</span><span class='line'>            <span class="k">let</span> <span class="k">rec</span> <span class="n">loop</span> <span class="n">registry</span> <span class="o">=</span>
+</span><span class='line'>                <span class="n">async</span> <span class="o">{</span>
+</span><span class='line'>                    <span class="k">let</span><span class="o">!</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">inbox</span><span class="o">.</span><span class="nc">TryReceive</span> <span class="mi">1000</span>
+</span><span class='line'>                    <span class="k">match</span> <span class="n">msg</span> <span class="k">with</span>
+</span><span class='line'>                    <span class="o">|</span> <span class="nc">Some</span> <span class="o">(</span><span class="nc">ChildFaulted</span> <span class="n">childId</span><span class="o">)</span> <span class="o">-&gt;</span>
+</span><span class='line'>                        <span class="n">printfn</span> <span class="s2">&quot;child faulted %A&quot;</span> <span class="n">childId</span>
+</span><span class='line'>                        <span class="n">dispose</span> <span class="o">(</span><span class="nn">Map</span><span class="p">.</span><span class="n">find</span> <span class="n">childId</span> <span class="n">registry</span><span class="o">)</span>
+</span><span class='line'>                        <span class="n">printfn</span> <span class="s2">&quot;re-launching child %A&quot;</span> <span class="n">childId</span>
+</span><span class='line'>                        <span class="k">let</span> <span class="n">registry</span> <span class="o">=</span>
+</span><span class='line'>                            <span class="nn">Map</span><span class="p">.</span><span class="n">add</span> <span class="n">childId</span> <span class="o">(</span><span class="nn">Worker</span><span class="p">.</span><span class="n">spawnLink</span> <span class="o">(</span><span class="n">errorHandler</span> <span class="n">childId</span><span class="o">))</span> <span class="n">registry</span>
+</span><span class='line'>                        <span class="k">return</span><span class="o">!</span> <span class="n">loop</span> <span class="n">registry</span>
+</span><span class='line'>                    <span class="o">|</span> <span class="nc">None</span> <span class="o">-&gt;</span>
+</span><span class='line'>                        <span class="n">printfn</span> <span class="s2">&quot;asking workers to do work&quot;</span>
+</span><span class='line'>                        <span class="n">registry</span> <span class="o">|&gt;</span> <span class="nn">Map</span><span class="p">.</span><span class="n">iter</span> <span class="o">(</span><span class="k">fun</span> <span class="n">k</span> <span class="n">v</span> <span class="o">-&gt;</span> <span class="n">v</span><span class="o">.</span><span class="nc">Post</span> <span class="o">(</span><span class="nn">Worker</span><span class="p">.</span><span class="nn">WorkerProtocol</span><span class="p">.</span><span class="nc">DoWork</span><span class="o">))</span>
+</span><span class='line'>                        <span class="k">return</span><span class="o">!</span> <span class="n">loop</span> <span class="n">registry</span> <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="c1">// start the supervisor by creating 5 worker child agents</span>
+</span><span class='line'>            <span class="o">[</span><span class="mi">0</span><span class="o">..</span><span class="mi">4</span><span class="o">]</span>
+</span><span class='line'>            <span class="o">|&gt;</span> <span class="nn">List</span><span class="p">.</span><span class="n">map</span> <span class="o">(</span><span class="k">fun</span> <span class="o">_</span> <span class="o">-&gt;</span> <span class="nn">Guid</span><span class="p">.</span><span class="nc">NewGuid</span><span class="bp">()</span><span class="o">)</span>
+</span><span class='line'>            <span class="o">|&gt;</span> <span class="nn">List</span><span class="p">.</span><span class="n">map</span> <span class="o">(</span><span class="k">fun</span> <span class="n">childId</span> <span class="o">-&gt;</span> <span class="n">childId</span><span class="o">,</span> <span class="nn">Worker</span><span class="p">.</span><span class="n">spawnLink</span> <span class="o">(</span><span class="n">errorHandler</span> <span class="n">childId</span><span class="o">))</span>
+</span><span class='line'>            <span class="o">|&gt;</span> <span class="nn">Map</span><span class="p">.</span><span class="n">ofList</span>
+</span><span class='line'>            <span class="o">|&gt;</span> <span class="n">loop</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">agent</span><span class="o">.</span><span class="nn">Error</span><span class="p">.</span><span class="nc">Add</span> <span class="n">link</span>
+</span><span class='line'>        <span class="n">agent</span><span class="o">.</span><span class="nc">Start</span><span class="bp">()</span>
+</span><span class='line'>        <span class="n">agent</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Programming with agents in fsharp is both fun and enabling but there are patterns that will make the overall experience  better in the long run if you get right early. In potential future entries I&rsquo;d like to cover my experience regarding flow control and distribution and any other interesting aspects I may come across.</p>
+]]></content>
+  </entry>
+  
+</feed>
