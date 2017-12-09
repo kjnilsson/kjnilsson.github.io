@@ -12,7 +12,7 @@ This blog will guide you through getting started with `fez` ( the version availa
 
 ### Fezzing up
 
-To get started download the latest version available for your platform on the github [releases](RELEASES) page. Unzip the release and optionally add the directory to you PATH. All commands in this entry assumes the fez release was downloaded to the same directory as our project.
+To get started download the latest version available for your platform on the github [releases](https://github.com/kjnilsson/fez/releases/tag/v0.1.0-alpha.2) page. Unzip the release and optionally add the directory to you PATH. All commands in this entry assumes the fez release was downloaded to the same directory as our project.
 
 Create a directory called `fezmaz` and unzip the release into the same folder. Inside the release directory (which is `osx-x64` for me - replace as required)  there should be a `fez` or `fez.exe` binary. This is `fez`. Say hi `fez`. Run:
 
@@ -153,7 +153,7 @@ Ok so we also need to be able to insert into the table as well as lookup. Here i
 Flicking back to the docs we see that the return type of `ets:insert/2` is simply the
 atom `true`. So again we have to create a DU just for this value. We could have used a bool but there are no cases where the function would return `false` so it is better to use a more accurate representation.
 
-We also create another erlang term to represent the tuple that is used for the key/value data. We have to wrap the tuple in a DU and annotate it with `ErlangTerm`. This is due toa bug in the fez compiler that hopefully should be fixed in the next version allowing us to simply use a tuple instead.
+We also create another erlang term to represent the tuple that is used for the key/value data. We have to wrap the tuple in a DU and annotate it with `ErlangTerm`. This is due to a bug in the fez compiler that hopefully should be fixed in the next version allowing us to simply use a tuple instead.
 
 ```
 [<ErlangTerm>]
@@ -287,46 +287,10 @@ Diana has NOT been good and will get nothing
 
 So that's (t)hat.
 
+[Full code](https://gist.github.com/kjnilsson/7953e4b0f59578a2f105f4cf1035bc20)
+
+
 Laters!
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 Happy Fezmas!
