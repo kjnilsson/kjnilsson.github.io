@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"  lang="en-us">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+<title>Happy Fezmas (or Getting started with Fez) | kjnilsson:blog/0</title>
+
+
+<link rel="stylesheet" href="http://kjnilsson.github.io//css/style.css"/></head>
+<body>
+
+<section class="section">
+  <div class="container">
+    <nav class="nav">
+      <div class="nav-left">
+        <a class="nav-item" href="http://kjnilsson.github.io/"><h1 class="title is-4">kjnilsson:blog/0</h1></a>
+      </div>
+      <div class="nav-right">
+        <nav class="nav-item level is-mobile"></nav>
+      </div>
+    </nav>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="subtitle is-6 is-pulled-right">
+      
+    </div>
+    <h2 class="subtitle is-6">December 9, 2017</h2>
+    <h1 class="title">Happy Fezmas (or Getting started with Fez)</h1>
+      
+    <div class="content">
+      
+
+<p>Fez has always had an affinity with Father Christmas (some call him Santa this is obviously not correct). Why I hear you ask? Well one of them wears a red hat and one of them <em>is</em> a red hat. They are very close. Hence this blog post is coming incredibly easy for me (Karl) and not at all something I just I forced myself to write whilst jet-lagging.</p>
+
+<p>You may by now assume that <code>fez</code> isn&rsquo;t just a hat from the Moroccan city of the same name. Not at all. Fez is also an F# to (core) erlang compiler! In short fez takes F# code (or rather a subset of F# code) and translates it to <a href="https://www.it.uu.se/research/group/hipe/cerl/doc/core_erlang-1.0.3.pdf">core erlang</a> then compiles it to beam using the standard erlang (erlc) compiler. Some people may refer to this as &ldquo;transpiling&rdquo; - I am on the other hand pretty sure that is not a word or at least not a word with a clear definition so will never use it.</p>
+
+<p>This blog will guide you through getting started with <code>fez</code> ( the version available at the time of writing is <code>0.1.0-alpha.2</code>).</p>
+
+<h3 id="fezzing-up">Fezzing up</h3>
+
+<p>To get started download the latest version available for your platform on the github <a href="RELEASES">releases</a> page. Unzip the release and optionally add the directory to you PATH. All commands in this entry assumes the fez release was downloaded to the same directory as our project.</p>
+
+<p>Create a directory called <code>fezmaz</code> and unzip the release into the same folder. Inside the release directory (which is <code>osx-x64</code> for me - replace as required)  there should be a <code>fez</code> or <code>fez.exe</code> binary. This is <code>fez</code>. Say hi <code>fez</code>. Run:</p>
+
+<pre><code>./osx-x64/fez help
+
+</code></pre>
+
+<p>To see the list of currently available commands:</p>
+
+<pre><code>
+USAGE:
+    fez init
+        Creates a dotnet core 2.0.0 fsharp project file in the current directory
+        with a reference to the Fez.Core library. Requires dotnet to be installed
+        and available in PATH.
+
+    fez compile &lt;options&gt; &lt;files&gt;
+        Compiles fsharp files to core erlang and beam.
+
+        OPTIONS:
+            -o | --output       set output directory
+            --nobeam            do not compile core files to beam
+
+    fez erl &lt;args&gt;
+        Launches the erlang shell with the appropriate search paths set.
+
+    fez help
+        Shows this text.
+</code></pre>
+
+<p>First we are going to initialize the current directory with <code>fez init</code>. This step requires <a href="https://www.microsoft.com/net/learn/get-started">dotnet core</a> to be installed and available.</p>
+
+<pre><code>./osx-x64/fez init
+</code></pre>
+
+<p>This step is optional as <code>fez</code> does not actually require .NET core to compile code. This step is only so that existing editor tooling (vim, emacs, ionide) works better with the <code>fez</code> dependencies.</p>
+
+<p>Now we should have an <code>fezmaz.fsproj</code> and <code>code.fs</code> in our current directory. Open up the <code>code.fs</code> file in your <a href="http://www.vim.org/">favourite editor</a>.</p>
+
+<p>Type the following code in:</p>
+
+<pre><code>module xmas
+open Fez.Core
+
+
+let greet who =
+    printf &quot;Hi %s&quot; who
+</code></pre>
+
+<p>Compile it using:</p>
+
+<pre><code>./osx-x64/fez compile code.fs
+
+</code></pre>
+
+<p>Then run</p>
+
+<pre><code>./osx-x64/fez erl
+
+</code></pre>
+
+<p>To start an erlang shell with the appropriate fez search paths in place. You should be greeted wilike the following:</p>
+
+<pre><code>Erlang/OTP 20 [erts-9.1.5] [source] [64-bit] [smp:8:8] [ds:8:8:10] [async-threads:10] [hipe] [kernel-poll:false] [dtrace]
+
+Eshell V9.1.5  (abort with ^G)
+2&gt;
+</code></pre>
+
+<p>We can now call our <code>greet</code> function using erlang syntax:</p>
+
+<pre><code>1&gt; xmas:greet(&quot;Fez&quot;).
+Hi Fez
+ok
+2&gt;
+</code></pre>
+
+<p>And there that&rsquo;s it. A simple, sequential Hello World done effectively. Which isn&rsquo;t very interesting.</p>
+
+<p>You may have heard that the erlang programming model is very much about message passing between processes and that is true and <code>fez</code> support these patterns and we should make a simple program that highlight how these work.</p>
+
+<p>So we will write a program that spawns a Father Christmas process that has got an <a href="http://erlang.org/doc/man/ets.html">ETS</a> lookup table of people and whether they have been good or bad this year. We can then send a wishlist to Father Christmas and possibly receive a present back.</p>
+
+<p>To achieve this we first have to interop with native erlang modules. This is done using a dummy function ( of any name) decorated with the <code>ModCall(module, function)</code> attribute.
+The first thing to do is to create the new table using <code>ets:new/2</code>. Looking at the erlang documentation we can see that <code>ets:new/2</code> takes a Name that needs to be an atom and a list of options, many of which are atoms as well. F# doesn&rsquo;t have atoms (Can we have atoms Don? For Christmas?). In erlang atoms are either used as stand alone values or often as the tag in a tagged tuple. in short they&rsquo;re used somewhat similarly to discriminated unions and as it happens that is exactly what is used in <code>fez</code> to represent atoms.</p>
+
+<p>The erlang code we&rsquo;d like to be able to call would be something like:</p>
+
+<pre><code>ets:new(good_bad, [named_table, protected])
+
+</code></pre>
+
+<p>This means we need a DU to represent name of the table like this:</p>
+
+<pre><code>[&lt;ErlangTerm&gt;]
+type EtsName = | Good_bad
+</code></pre>
+
+<p>Decorating the type with the <code>ErlangTerm</code> turns a DU case without any data into an atom. It will lower-case the first character as all atoms in erlang need to begin with a lower case and all cases in F# DUs need to begin with an upper case.</p>
+
+<p>We also need to represent the two option atoms:</p>
+
+<pre><code>[&lt;ErlangTerm&gt;]
+type EtsOption =
+    | Named_table
+    | Protected
+</code></pre>
+
+<p>Good. Looking at the docs we see that <code>ets:new/2</code> returns a <code>tid()</code>. A tid is a table identifier and is effectively opaque to the user so we can simply create a single case DU to represent it:</p>
+
+<pre><code>type Tid = Tid
+</code></pre>
+
+<p>Jolly good. That is quite a few types for just calling one function! Ideally at some later release of <code>fez</code> we&rsquo;d ship a shim module inside <code>Fez.Core</code> for common erlang modules like <code>ets</code> but for now this is the interop story. Once you&rsquo;ve got the types right it should be straight-forward to program accurately against it.</p>
+
+<p>Ok so we also need to be able to insert into the table as well as lookup. Here is the types and functions for that.</p>
+
+<p>Flicking back to the docs we see that the return type of <code>ets:insert/2</code> is simply the
+atom <code>true</code>. So again we have to create a DU just for this value. We could have used a bool but there are no cases where the function would return <code>false</code> so it is better to use a more accurate representation.</p>
+
+<p>We also create another erlang term to represent the tuple that is used for the key/value data. We have to wrap the tuple in a DU and annotate it with <code>ErlangTerm</code>. This is due toa bug in the fez compiler that hopefully should be fixed in the next version allowing us to simply use a tuple instead.</p>
+
+<pre><code>[&lt;ErlangTerm&gt;]
+type EtsInsertRrt = | True
+
+[&lt;ErlangTerm&gt;]
+type GoodBadRecord = | T of string * bool
+
+[&lt;ModCall(&quot;ets&quot;, &quot;insert&quot;)&gt;]
+let etsInsert (tab: Tid) (o: GoodBadRecord) = True
+
+[&lt;ModCall(&quot;ets&quot;, &quot;lookup&quot;)&gt;]
+let etsLookup (tab: Tid) (key: string) : GoodBadRecord list  = []
+</code></pre>
+
+<p>Next up we need some code to seed the table with some interesting data. We also need to interop with the <code>random</code> module to randomly select who has been good and who has been bad:</p>
+
+<pre><code>[&lt;ModCall(&quot;random&quot;, &quot;uniform&quot;)&gt;]
+let randomUniform (n: int) : int = 1
+
+let randBool () =
+    match randomUniform 2 with
+    | 1 -&gt; true
+    | _ -&gt; false
+
+let seed () =
+    let t = etsNew Good_bad [Named_table; Protected]
+    let insert name good =
+        let True = etsInsert t (T(name, good))
+        ()
+    randBool() |&gt; insert &quot;Karl&quot;
+    randBool() |&gt; insert &quot;Michael&quot;
+    randBool() |&gt; insert &quot;Diana&quot;
+    randBool() |&gt; insert &quot;Gerhard&quot;
+    randBool() |&gt; insert &quot;Jean-Sebastién&quot;
+    randBool() |&gt; insert &quot;Luke&quot;
+    randBool() |&gt; insert &quot;Daniil&quot;
+    randBool() |&gt; insert &quot;Dan&quot;
+    randBool() |&gt; insert &quot;Arnaud&quot;
+    t
+</code></pre>
+
+<p>The names are arbitrary. Any similarity with my team-members at work is simply accidental. ;)</p>
+
+<p>Now. Now we need to create a long living process representing Father Christmas. The simpest way is to create a recursive function that waits for incoming messages, replies and recurses.</p>
+
+<p>In erlang receive statements are always selective. Only messages that match a pattern match are picked out of the mailbox. In <code>fez</code> these selective receive matches are represented by&hellip;</p>
+
+<p>You guessed it. Discriminated Unions. Here is the full FC code:</p>
+
+<pre><code>type WishlistData =
+    { Name : string
+      Pid : Pid
+      Stuff : string list }
+
+type Wishlist = Wishlist of WishlistData
+
+type MaybePresent =
+    | Present of string
+    | Nothing
+
+
+let lookup t who =
+    match etsLookup t who with
+    | [x] -&gt; Some x
+    | _ -&gt; None
+
+let rec fcLoop t =
+    match receive&lt;Wishlist&gt;() with
+    | Wishlist { Stuff = [] } -&gt;
+        printfn &quot;an empty wishlist - how strange...&quot;
+        fcLoop t
+    | Wishlist { Name = key
+                 Pid = pid
+                 Stuff = stuff } -&gt;
+        match lookup t key with
+        | None -&gt;
+            printfn &quot;curious - I have no record of this person...&quot;
+            fcLoop t
+        | Some (T(_, true)) -&gt;
+            printfn &quot;%s has been good and will get a present&quot; key
+            pid &lt;! (Present &lt;| List.head stuff)
+            fcLoop t
+        | Some (T(_, false)) -&gt;
+            printfn &quot;%s has NOT been good and will get nothing&quot; key
+            pid &lt;! Nothing
+            fcLoop t
+
+let spawnFc () =
+     fun () -&gt; seed() |&gt; fcLoop
+     |&gt; spawn
+</code></pre>
+
+<p>The <code>spawnFc</code> function first seeds the data table then spawns a process that calls the recursive <code>fcLoop</code> function.</p>
+
+<p>All that is left are some functions for sending a wishlist and waiting for replies:</p>
+
+<pre><code>let waitForPresent () =
+    match receive&lt;MaybePresent&gt;() with
+    | Present thing -&gt;
+        printfn &quot;yay I got a %s&quot; thing
+    | Nothing -&gt;
+        printfn &quot;:(((((&quot;
+
+let sendWishList fc who stuff =
+    let w = Wishlist { Name = who
+                       Pid = self()
+                       Stuff = stuff}
+    fc &lt;! w
+    waitForPresent ()
+</code></pre>
+
+<p>With all pieces in place we can compile this again using <code>fez compile</code> the run the shell using <code>fez erl</code> and have a play.</p>
+
+<pre><code>Eshell V9.1.5  (abort with ^G)
+1&gt; Fc = xmas:spawnFc().
+&lt;0.62.0&gt;
+2&gt; xmas:sendWishList(Fc, &quot;Karl&quot;, [&quot;synth module&quot;, &quot;synth&quot;, &quot;book about synths&quot;]).
+Karl has been good and will get a present
+yay I got a synth module
+ok
+3&gt; xmas:sendWishList(Fc, &quot;Diana&quot;, [&quot;climbing stuff&quot;, &quot;bat stuff&quot;]).
+Diana has NOT been good and will get nothing
+:(((((ok
+</code></pre>
+
+<p>So that&rsquo;s (t)hat.</p>
+
+<p>Laters!</p>
+
+<p>Happy Fezmas!</p>
+
+    </div>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container has-text-centered">
+    <p></p>
+    
+  </div>
+</section>
+
+</body>
+</html>

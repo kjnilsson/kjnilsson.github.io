@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on kjnilsson:blog/0</title>
+    <link>http://kjnilsson.github.io/posts/</link>
+    <description>Recent content in Posts on kjnilsson:blog/0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 09 Dec 2017 13:11:51 +0000</lastBuildDate>
+    
+	<atom:link href="http://kjnilsson.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Happy Fezmas (or Getting started with Fez)</title>
+      <link>http://kjnilsson.github.io/posts/fezmas/</link>
+      <pubDate>Sat, 09 Dec 2017 13:11:51 +0000</pubDate>
+      
+      <guid>http://kjnilsson.github.io/posts/fezmas/</guid>
+      <description>Fez has always had an affinity with Father Christmas (some call him Santa this is obviously not correct). Why I hear you ask? Well one of them wears a red hat and one of them is a red hat. They are very close. Hence this blog post is coming incredibly easy for me (Karl) and not at all something I just I forced myself to write whilst jet-lagging.
+You may by now assume that fez isn&amp;rsquo;t just a hat from the Moroccan city of the same name.</description>
+    </item>
+    
+  </channel>
+</rss>
